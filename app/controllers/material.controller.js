@@ -79,3 +79,14 @@ exports.getByMaterial = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+
+
+
+exports.getByStoargeUnit = async (req, res) => {
+  try {
+    const material = await Material.findOne({ where: { storageUn: req.query.storageUn } });
+    material ? res.send(material) : res.status(404).send({ message: "Material not found" });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};

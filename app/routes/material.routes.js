@@ -9,6 +9,7 @@ module.exports = app => {
   router.put("/:id", materials.update);
   router.delete("/:id", materials.delete);
   router.get("/code", materials.getByMaterial);
+  router.get("/storageunit", materials.getByStoargeUnit);
 
   app.use("/api/materials", router);
 };
