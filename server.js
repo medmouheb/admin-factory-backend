@@ -4,7 +4,8 @@ const cors = require("cors");
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:5173"
+  origin: "http://localhost:5173", // your frontend origin
+  credentials: true,                // 🔥 allow cookies
 };
 
 app.use(cors(corsOptions));
@@ -38,6 +39,7 @@ require('./app/routes/material.routes')(app);
 require('./app/routes/part.routes')(app);
 require('./app/routes/ticket.routes')(app);
 require('./app/routes/ticketCode.routes')(app);
+require('./app/routes/client.routes')(app);
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

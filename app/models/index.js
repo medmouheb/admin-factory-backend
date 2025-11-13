@@ -28,6 +28,7 @@ db.material = require("../models/material.model.js")(sequelize, Sequelize);
 db.part = require("../models/part.model.js")(sequelize, Sequelize);
 db.ticket = require("../models/ticket.model.js")(sequelize, Sequelize);
 db.ticketCode = require("../models/ticketCode.model.js")(sequelize, Sequelize);
+db.client = require("../models/client.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles"
@@ -37,5 +38,6 @@ db.user.belongsToMany(db.role, {
 });
 
 db.ROLES = ["operateur", "superviseur", "admin"];
+db.AccessTos = ["scan", "upload", "clients"];
 
 module.exports = db;
