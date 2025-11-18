@@ -4,6 +4,7 @@ module.exports = (app) => {
 
   router.post("/creat", ticketCodeController.createWithSuffix);
 
+router.get("/ticket-code", ticketCodeController.findAll);   // <= search + pagination
 
   app.use("/api/ticketscode", router);
 };

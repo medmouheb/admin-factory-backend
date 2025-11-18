@@ -1,5 +1,6 @@
 const db = require("../models");
 const TicketCode = db.ticketCode;
+const { Op } = require("sequelize");
 
 // Helper function to generate random alphanumeric string of given length
 function generateRandomAlphanumeric(length) {
@@ -17,7 +18,9 @@ exports.createWithSuffix = async (req, res) => {
     const { suffix } = req.body;
 
     if (!suffix || suffix.length !== 5) {
-      return res.status(400).json({ message: "Suffix must be exactly 5 characters" });
+      return res
+        .status(400)
+        .json({ message: "Suffix must be exactly 5 characters" });
     }
 
     let code;
@@ -36,6 +39,48 @@ exports.createWithSuffix = async (req, res) => {
     res.status(201).json(newTicketCode);
   } catch (error) {
     console.error("Error creating TicketCode:", error);
-    res.status(500).json({ message: "Error creating TicketCode", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error creating TicketCode", error: error.message });
+  }
+};
+
+
+//
+// ✅ Search + Pagination
+//
+exports.findAll = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+
+    const offset = (page - 1) * limit;
+
+    const whereClause = search
+      ? { code: { [Op.like]: `%${search.toUpperCase()}%` } }
+      : {};
+
+    const { rows: data, count: totalItems } =
+      await TicketCode.findAndCountAll({
+        where: whereClause,
+        limit,
+        offset,
+        order: [["createdAt", "DESC"]],
+      });
+
+    res.json({
+      page,
+      limit,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      data,
+    });
+  } catch (error) {
+    console.error("Error fetching TicketCodes:", error);
+    res.status(500).json({
+      message: "Error fetching TicketCodes",
+      error: error.message,
+    });
   }
 };

@@ -8,7 +8,7 @@ module.exports = (app) => {
   router.post("/bulk", ticketController.bulkCreate);
 
   // Get all
-  router.get("/", ticketController.findAll);
+  router.get("/search", ticketController.findAll);
 
   // Get one by ID
   router.get("/getbyid/:id", ticketController.findOne);

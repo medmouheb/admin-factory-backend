@@ -1,5 +1,6 @@
 const db = require("../models");
 const Ticket = db.ticket;
+const { Op } = require("sequelize");
 
 // ✅ Create one Ticket
 exports.create = async (req, res) => {
@@ -47,13 +48,40 @@ exports.bulkCreate = async (req, res) => {
 // ✅ Get all Tickets
 exports.findAll = async (req, res) => {
   try {
-    const tickets = await Ticket.findAll();
-    res.status(200).json(tickets);
+    // Pagination params
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Search param
+    const search = req.query.search || "";
+
+    const whereClause = search
+      ? {
+          ticketCode: { [Op.like]: `%${search}%` },
+        }
+      : {};
+
+    const { count, rows } = await Ticket.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({
+      data: rows,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching Tickets", error: error.message });
+    res.status(500).json({
+      message: "Error fetching TicketCodes",
+      error: error.message,
+    });
   }
 };
-
 // ✅ Get one by ID
 exports.findOne = async (req, res) => {
   try {
