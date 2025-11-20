@@ -22,4 +22,5 @@ module.exports = function(app) {
   app.post("/api/auth/signin", controller.signin);
   app.post("/api/auth/refresh", controller.refreshToken);
   app.get("/api/auth/me", controller.userInfo);
+  app.get("/api/auth/session", controller.session);
 };

@@ -3,8 +3,19 @@ const config = require("../config/auth.config.js");
 const db = require("../models");
 const User = db.user;
 
+const parseCookies = (cookieHeader) => {
+  if (!cookieHeader) return {};
+  return cookieHeader.split(";").map((v) => v.split("=")).reduce((acc, parts) => {
+    const k = parts[0] ? parts[0].trim() : "";
+    const v = decodeURIComponent((parts[1] || "").trim());
+    if (k) acc[k] = v;
+    return acc;
+  }, {});
+};
+
 verifyToken = (req, res, next) => {
-  let token = req.headers["x-access-token"];
+  const cookies = parseCookies(req.headers["cookie"]);
+  let token = cookies.accessToken || req.headers["x-access-token"];
 
   if (!token) {
     return res.status(403).send({
