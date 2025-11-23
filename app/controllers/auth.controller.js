@@ -18,6 +18,7 @@ exports.signup = async (req, res) => {
     const user = await User.create({
       username: req.body.username,
       email: req.body.email,
+      matricule: req.body.matricule,
       password: bcrypt.hashSync(req.body.password, 8),
     });
 
@@ -75,11 +76,12 @@ exports.signin = async (req, res) => {
     const cookieOptionsRefresh = { httpOnly: true, sameSite: "lax", secure: false, maxAge: 7 * 24 * 60 * 60 * 1000, path: "/" };
     res.cookie("accessToken", accessToken, cookieOptionsToken);
     res.cookie("refreshToken", refreshToken, cookieOptionsRefresh);
-   
+
     res.status(200).send({
       id: user.id,
       username: user.username,
       email: user.email,
+      matricule: user.matricule,
       roles: authorities,
       accessToken,
       refreshToken,
@@ -172,6 +174,7 @@ exports.userInfo = (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        matricule: user.matricule,
         roles,
       });
     } catch (error) {
@@ -211,6 +214,7 @@ exports.session = async (req, res) => {
           id: user.id,
           username: user.username,
           email: user.email,
+          matricule: user.matricule,
           roles,
         });
       } catch (error) {
@@ -247,6 +251,7 @@ exports.session = async (req, res) => {
             id: user.id,
             username: user.username,
             email: user.email,
+            matricule: user.matricule,
             roles,
             accessToken: newAccessToken,
             refreshToken: newRefreshToken,

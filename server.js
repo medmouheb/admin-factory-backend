@@ -40,6 +40,11 @@ require('./app/routes/part.routes')(app);
 require('./app/routes/ticket.routes')(app);
 require('./app/routes/ticketCode.routes')(app);
 require('./app/routes/client.routes')(app);
+require('./app/routes/retouching.routes')(app);
+require('./app/routes/qualityInspection.routes')(app);
+require('./app/routes/packet.routes')(app);
+require('./app/routes/piece.routes')(app);
+
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
@@ -51,12 +56,12 @@ function initial() {
     id: 1,
     name: "operateur"
   });
- 
+
   Role.create({
     id: 2,
     name: "superviseur"
   });
- 
+
   Role.create({
     id: 3,
     name: "admin"

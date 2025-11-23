@@ -26,6 +26,7 @@ exports.updateUser = async (req, res) => {
     const payload = {};
     if (req.body.username !== undefined) payload.username = req.body.username;
     if (req.body.email !== undefined) payload.email = req.body.email;
+    if (req.body.matricule !== undefined) payload.matricule = req.body.matricule;
     if (req.body.password !== undefined) payload.password = bcrypt.hashSync(req.body.password, 8);
     const [updated] = await User.update(payload, { where: { id } });
     if (updated === 1) {
@@ -55,12 +56,14 @@ exports.deleteUser = async (req, res) => {
 
 exports.searchUsers = async (req, res) => {
   try {
-    const { page = 1, size = 10, username = "", role = "" } = req.query;
+    const { page = 1, size = 10, username = "", matricule = "", role = "" } = req.query;
     const limit = parseInt(size);
     const currentPage = parseInt(page);
     const offset = (currentPage - 1) * limit;
 
-    const where = username ? { username: { [Op.like]: `%${username}%` } } : {};
+    const where = {};
+    if (username) where.username = { [Op.like]: `%${username}%` };
+    if (matricule) where.matricule = { [Op.like]: `%${matricule}%` };
     const include = role
       ? [{ model: Role, where: { name: role }, through: { attributes: [] }, required: true }]
       : [{ model: Role, through: { attributes: [] } }];
@@ -80,6 +83,68 @@ exports.searchUsers = async (req, res) => {
       currentPage,
       users: rows,
     });
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findByPk(id, {
+      include: [{
+        model: Role,
+        attributes: ['id', 'name'],
+        through: {
+          attributes: []
+        }
+      }]
+    });
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const roles = user.roles.map((role) => "ROLE_" + role.name.toUpperCase());
+
+    return res.status(200).send({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      matricule: user.matricule,
+      roles: roles,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    });
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+exports.createUser = async (req, res) => {
+  try {
+    const user = await User.create({
+      username: req.body.username,
+      email: req.body.email,
+      matricule: req.body.matricule,
+      password: bcrypt.hashSync(req.body.password, 8),
+    });
+
+    if (req.body.roles) {
+      const roles = await Role.findAll({
+        where: {
+          name: {
+            [Op.or]: req.body.roles
+          }
+        }
+      });
+      await user.setRoles(roles);
+    } else {
+      // Default role = 1 (user/operateur)
+      await user.setRoles([1]);
+    }
+
+    return res.status(201).send({ message: "User registered successfully!" });
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }

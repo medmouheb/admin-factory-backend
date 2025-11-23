@@ -1,8 +1,8 @@
 const { authJwt } = require("../middleware");
 const controller = require("../controllers/user.controller");
 
-module.exports = function(app) {
-  app.use(function(req, res, next) {
+module.exports = function (app) {
+  app.use(function (req, res, next) {
     res.header(
       "Access-Control-Allow-Headers",
       "x-access-token, Origin, Content-Type, Accept"
@@ -20,7 +20,7 @@ module.exports = function(app) {
 
   app.get(
     "/api/test/mod",
-    [authJwt.verifyToken, authJwt.isModerator],
+    // [authJwt.verifyToken, authJwt.isModerator],
     controller.moderatorBoard
   );
 
@@ -28,6 +28,24 @@ module.exports = function(app) {
     "/api/test/admin",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard
+  );
+
+  app.post(
+    "/api/users",
+    //[authJwt.verifyToken, authJwt.isAdmin],
+    controller.createUser
+  );
+
+  app.get(
+    "/api/users/search",
+    // [authJwt.verifyToken, authJwt.isAdmin],
+    controller.searchUsers
+  );
+
+  app.get(
+    "/api/users/:id",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getUserById
   );
 
   app.put(
@@ -40,11 +58,5 @@ module.exports = function(app) {
     "/api/users/:id",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.deleteUser
-  );
-
-  app.get(
-    "/api/users/search",
-    [authJwt.verifyToken, authJwt.isAdmin],
-    controller.searchUsers
   );
 };

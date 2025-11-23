@@ -1,0 +1,132 @@
+{
+    "basicPacket": {
+        "packetId": "PKT-001",
+        "huGalia": "HU-GALIA-2023-001",
+        "location": "354D",
+        "status": "Ready for Transfer",
+        "quantity": 50,
+        "date": "2025-11-22"
+    },
+    "packetWithPieces": {
+        "packetId": "PKT-002",
+        "huGalia": "HU-GALIA-2023-002",
+        "location": "354D",
+        "status": "Ready for Transfer",
+        "quantity": 100,
+        "date": "2025-11-22",
+        "pieces": [
+            {
+                "barcode": "BC-001-2023",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-002-2023",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-003-2023",
+                "status": "Retouched"
+            }
+        ]
+    },
+    "packetInTransit": {
+        "packetId": "PKT-003",
+        "huGalia": "HU-GALIA-2023-003",
+        "location": "Transit",
+        "status": "In Transit",
+        "quantity": 75,
+        "date": "2025-11-22"
+    },
+    "packetInStock": {
+        "packetId": "PKT-004",
+        "huGalia": "HU-GALIA-2023-004",
+        "location": "Stock 354D",
+        "status": "In Stock",
+        "quantity": 120,
+        "date": "2025-11-21"
+    },
+    "packetReceived": {
+        "packetId": "PKT-005",
+        "huGalia": "HU-GALIA-2023-005",
+        "location": "353A",
+        "status": "Received",
+        "quantity": 80,
+        "date": "2025-11-22",
+        "pieces": [
+            {
+                "barcode": "BC-005-001",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-005-002",
+                "status": "NOK"
+            },
+            {
+                "barcode": "BC-005-003",
+                "status": "Replaced"
+            }
+        ]
+    },
+    "packetReturning": {
+        "packetId": "PKT-006",
+        "huGalia": "HU-GALIA-2023-006",
+        "location": "Transit",
+        "status": "Returning",
+        "quantity": 65,
+        "date": "2025-11-20"
+    },
+    "minimalPacket": {
+        "packetId": "PKT-MIN-001",
+        "huGalia": "HU-GALIA-MINIMAL"
+    },
+    "largePacketWithManyPieces": {
+        "packetId": "PKT-LARGE-001",
+        "huGalia": "HU-GALIA-2023-LARGE",
+        "location": "354D",
+        "status": "Ready for Transfer",
+        "quantity": 500,
+        "date": "2025-11-22",
+        "pieces": [
+            {
+                "barcode": "BC-LRG-001",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-LRG-002",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-LRG-003",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-LRG-004",
+                "status": "Retouched"
+            },
+            {
+                "barcode": "BC-LRG-005",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-LRG-006",
+                "status": "NOK"
+            },
+            {
+                "barcode": "BC-LRG-007",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-LRG-008",
+                "status": "Replaced"
+            },
+            {
+                "barcode": "BC-LRG-009",
+                "status": "OK"
+            },
+            {
+                "barcode": "BC-LRG-010",
+                "status": "OK"
+            }
+        ]
+    }
+}

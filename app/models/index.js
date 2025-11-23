@@ -29,6 +29,20 @@ db.part = require("../models/part.model.js")(sequelize, Sequelize);
 db.ticket = require("../models/ticket.model.js")(sequelize, Sequelize);
 db.ticketCode = require("../models/ticketCode.model.js")(sequelize, Sequelize);
 db.client = require("../models/client.model.js")(sequelize, Sequelize);
+db.reapirage = undefined; // Remove old reference if needed, or just overwrite
+db.retouching = require("../models/retouching.model.js")(sequelize, Sequelize);
+db.qualityInspection = require("../models/qualityInspection.model.js")(sequelize, Sequelize);
+db.packets = require("./packet.model.js")(sequelize, Sequelize);
+db.pieces = require("./piece.model.js")(sequelize, Sequelize);
+
+
+
+
+db.packets.hasMany(db.pieces, { as: "pieces" });
+db.pieces.belongsTo(db.packets, {
+  foreignKey: "packetId",
+  as: "packet",
+});
 
 db.role.belongsToMany(db.user, {
   through: "user_roles"
