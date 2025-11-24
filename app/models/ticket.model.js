@@ -18,10 +18,6 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true,
     },
-    operateur: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
   });
 
   return Ticket;
