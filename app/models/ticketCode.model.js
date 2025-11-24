@@ -10,6 +10,10 @@ module.exports = (sequelize, Sequelize) => {
       unique: true,
       allowNull: false,
     },
+    operateur: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
   });
 
   return TicketCode;
