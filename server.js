@@ -44,6 +44,7 @@ require('./app/routes/retouching.routes')(app);
 require('./app/routes/qualityInspection.routes')(app);
 require('./app/routes/packet.routes')(app);
 require('./app/routes/piece.routes')(app);
+require('./app/routes/history.routes')(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

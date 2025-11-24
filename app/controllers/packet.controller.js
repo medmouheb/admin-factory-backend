@@ -2,6 +2,7 @@ const db = require("../models");
 const Packet = db.packets;
 const Piece = db.pieces;
 const Op = db.Sequelize.Op;
+const { logHistory } = require("./history.controller");
 
 // Create and Save a new Packet
 exports.create = (req, res) => {
@@ -24,6 +25,9 @@ exports.create = (req, res) => {
 
     Packet.create(packet)
         .then(data => {
+            // Log creation
+            logHistory(req.userId, "CREATE", "Packet", data.packetId, packet);
+
             // If pieces are provided in the request, create them too
             if (req.body.pieces && req.body.pieces.length > 0) {
                 const pieces = req.body.pieces.map(p => ({ ...p, packetId: data.id }));
@@ -108,6 +112,7 @@ exports.update = (req, res) => {
     })
         .then(num => {
             if (num == 1) {
+                logHistory(req.userId, "UPDATE", "Packet", id, req.body);
                 res.send({
                     message: "Packet was updated successfully."
                 });
@@ -126,7 +131,7 @@ exports.update = (req, res) => {
 
 // Transfer Packet (354D -> 353A or Stock)
 exports.transfer = (req, res) => {
-    const id = req.params.id;
+    const id = req.params.id || req.body.packetId || req.body.id;
     const target = req.body.target; // '353A' or 'Stock'
 
     let updateData = {};
@@ -142,7 +147,10 @@ exports.transfer = (req, res) => {
 
     Packet.update(updateData, { where: condition })
         .then(num => {
-            if (num == 1) res.send({ message: "Packet transferred successfully." });
+            if (num == 1) {
+                logHistory(req.userId, "TRANSFER", "Packet", id, { target, ...updateData });
+                res.send({ message: "Packet transferred successfully." });
+            }
             else res.send({ message: `Cannot transfer Packet with id=${id}.` });
         })
         .catch(err => res.status(500).send({ message: "Error transferring Packet." }));
@@ -150,12 +158,15 @@ exports.transfer = (req, res) => {
 
 // Receive Packet at 353A
 exports.receive = (req, res) => {
-    const id = req.params.id;
+    const id = req.params.id || req.body.packetId || req.body.id;
     const condition = /^\d+$/.test(id) ? { id: id } : { packetId: id };
 
     Packet.update({ status: 'Received', location: '353A' }, { where: condition })
         .then(num => {
-            if (num == 1) res.send({ message: "Packet received successfully." });
+            if (num == 1) {
+                logHistory(req.userId, "RECEIVE", "Packet", id, { status: 'Received', location: '353A' });
+                res.send({ message: "Packet received successfully." });
+            }
             else res.send({ message: `Cannot receive Packet with id=${id}.` });
         })
         .catch(err => res.status(500).send({ message: "Error receiving Packet." }));
@@ -168,7 +179,10 @@ exports.returnPacket = (req, res) => {
 
     Packet.update({ status: 'Returning', location: 'Transit' }, { where: condition })
         .then(num => {
-            if (num == 1) res.send({ message: "Packet returned successfully." });
+            if (num == 1) {
+                logHistory(req.userId, "RETURN", "Packet", id, { status: 'Returning', location: 'Transit' });
+                res.send({ message: "Packet returned successfully." });
+            }
             else res.send({ message: `Cannot return Packet with id=${id}.` });
         })
         .catch(err => res.status(500).send({ message: "Error returning Packet." }));
@@ -181,7 +195,10 @@ exports.acceptReturn = (req, res) => {
 
     Packet.update({ status: 'Returned', location: '354D' }, { where: condition })
         .then(num => {
-            if (num == 1) res.send({ message: "Return accepted successfully." });
+            if (num == 1) {
+                logHistory(req.userId, "ACCEPT_RETURN", "Packet", id, { status: 'Returned', location: '354D' });
+                res.send({ message: "Return accepted successfully." });
+            }
             else res.send({ message: `Cannot accept return for Packet with id=${id}.` });
         })
         .catch(err => res.status(500).send({ message: "Error accepting return." }));

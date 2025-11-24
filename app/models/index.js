@@ -34,6 +34,7 @@ db.retouching = require("../models/retouching.model.js")(sequelize, Sequelize);
 db.qualityInspection = require("../models/qualityInspection.model.js")(sequelize, Sequelize);
 db.packets = require("./packet.model.js")(sequelize, Sequelize);
 db.pieces = require("./piece.model.js")(sequelize, Sequelize);
+db.history = require("../models/history.model.js")(sequelize, Sequelize);
 
 
 
@@ -49,6 +50,11 @@ db.role.belongsToMany(db.user, {
 });
 db.user.belongsToMany(db.role, {
   through: "user_roles"
+});
+
+db.history.belongsTo(db.user, {
+  foreignKey: "userId",
+  as: "user"
 });
 
 db.ROLES = ["operateur", "superviseur", "admin"];

@@ -155,6 +155,9 @@ exports.userInfo = (req, res) => {
     const authHeader = req.headers["authorization"];
     token = authHeader && authHeader.split(" ")[1];
   }
+  if (!token) {
+    token = req.headers["x-access-token"];
+  }
 
   if (!token) {
     return res.status(401).send({ message: "Access token required!" });

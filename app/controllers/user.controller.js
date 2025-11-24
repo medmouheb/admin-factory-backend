@@ -123,28 +123,41 @@ exports.getUserById = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    const user = await User.create({
-      username: req.body.username,
-      email: req.body.email,
-      matricule: req.body.matricule,
-      password: bcrypt.hashSync(req.body.password, 8),
-    });
+    const usersData = Array.isArray(req.body) ? req.body : [req.body];
+    const results = [];
 
-    if (req.body.roles) {
-      const roles = await Role.findAll({
-        where: {
-          name: {
-            [Op.or]: req.body.roles
-          }
+    for (const singleUser of usersData) {
+      try {
+        const user = await User.create({
+          username: singleUser.username,
+          email: singleUser.email,
+          matricule: singleUser.matricule,
+          password: bcrypt.hashSync(singleUser.password, 8),
+        });
+
+        if (singleUser.roles) {
+          // Handle roles if they are objects or strings
+          const roleNames = singleUser.roles.map(r => (typeof r === 'object' ? r.name : r));
+
+          const roles = await Role.findAll({
+            where: {
+              name: {
+                [Op.or]: roleNames
+              }
+            }
+          });
+          await user.setRoles(roles);
+        } else {
+          // Default role = 1 (user/operateur)
+          await user.setRoles([1]);
         }
-      });
-      await user.setRoles(roles);
-    } else {
-      // Default role = 1 (user/operateur)
-      await user.setRoles([1]);
+        results.push({ username: singleUser.username, status: "Success" });
+      } catch (err) {
+        results.push({ username: singleUser.username, status: "Failed", error: err.message });
+      }
     }
 
-    return res.status(201).send({ message: "User registered successfully!" });
+    return res.status(201).send({ message: "Process completed", results });
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }
