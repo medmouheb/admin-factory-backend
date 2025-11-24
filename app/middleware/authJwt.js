@@ -17,6 +17,9 @@ verifyToken = (req, res, next) => {
   const cookies = parseCookies(req.headers["cookie"]);
   let token = cookies.accessToken || req.headers["x-access-token"];
 
+
+
+  
   if (!token) {
     return res.status(403).send({
       message: "No token provided!"
