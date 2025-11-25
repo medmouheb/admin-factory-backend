@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
       unique: true,
       allowNull: false,
     },
-    operateur: {
+    matricule: {
       type: Sequelize.STRING,
       allowNull: true,
     },

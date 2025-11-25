@@ -1,6 +1,6 @@
 const db = require("../models");
 const User = db.user;
-const Role = db.role;
+// const Role = db.role; // Removed
 const { Op } = db.Sequelize;
 const bcrypt = require("bcryptjs");
 
@@ -24,9 +24,12 @@ exports.updateUser = async (req, res) => {
   try {
     const id = req.params.id;
     const payload = {};
-    if (req.body.username !== undefined) payload.username = req.body.username;
+    if (req.body.firstName !== undefined) payload.firstName = req.body.firstName;
+    if (req.body.lastName !== undefined) payload.lastName = req.body.lastName;
+    if (req.body.phone !== undefined) payload.phone = req.body.phone;
     if (req.body.email !== undefined) payload.email = req.body.email;
     if (req.body.matricule !== undefined) payload.matricule = req.body.matricule;
+    if (req.body.role !== undefined) payload.role = req.body.role;
     if (req.body.password !== undefined) payload.password = bcrypt.hashSync(req.body.password, 8);
     const [updated] = await User.update(payload, { where: { id } });
     if (updated === 1) {
@@ -56,21 +59,17 @@ exports.deleteUser = async (req, res) => {
 
 exports.searchUsers = async (req, res) => {
   try {
-    const { page = 1, size = 10, username = "", matricule = "", role = "" } = req.query;
+    const { page = 1, size = 10, matricule = "", role = "" } = req.query;
     const limit = parseInt(size);
     const currentPage = parseInt(page);
     const offset = (currentPage - 1) * limit;
 
     const where = {};
-    if (username) where.username = { [Op.like]: `%${username}%` };
     if (matricule) where.matricule = { [Op.like]: `%${matricule}%` };
-    const include = role
-      ? [{ model: Role, where: { name: role }, through: { attributes: [] }, required: true }]
-      : [{ model: Role, through: { attributes: [] } }];
+    if (role) where.role = role;
 
     const { rows, count } = await User.findAndCountAll({
       where,
-      include,
       limit,
       offset,
       order: [["createdAt", "DESC"]],
@@ -91,28 +90,20 @@ exports.searchUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     const id = req.params.id;
-    const user = await User.findByPk(id, {
-      include: [{
-        model: Role,
-        attributes: ['id', 'name'],
-        through: {
-          attributes: []
-        }
-      }]
-    });
+    const user = await User.findByPk(id);
 
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
 
-    const roles = user.roles.map((role) => "ROLE_" + role.name.toUpperCase());
-
     return res.status(200).send({
       id: user.id,
-      username: user.username,
-      email: user.email,
       matricule: user.matricule,
-      roles: roles,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      email: user.email,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     });
@@ -129,31 +120,18 @@ exports.createUser = async (req, res) => {
     for (const singleUser of usersData) {
       try {
         const user = await User.create({
-          username: singleUser.username,
-          email: singleUser.email,
           matricule: singleUser.matricule,
+          firstName: singleUser.firstName,
+          lastName: singleUser.lastName,
+          phone: singleUser.phone,
+          email: singleUser.email,
           password: bcrypt.hashSync(singleUser.password, 8),
+          role: singleUser.role || "operateur"
         });
 
-        if (singleUser.roles) {
-          // Handle roles if they are objects or strings
-          const roleNames = singleUser.roles.map(r => (typeof r === 'object' ? r.name : r));
-
-          const roles = await Role.findAll({
-            where: {
-              name: {
-                [Op.or]: roleNames
-              }
-            }
-          });
-          await user.setRoles(roles);
-        } else {
-          // Default role = 1 (user/operateur)
-          await user.setRoles([1]);
-        }
-        results.push({ username: singleUser.username, status: "Success" });
+        results.push({ matricule: singleUser.matricule, status: "Success" });
       } catch (err) {
-        results.push({ username: singleUser.username, status: "Failed", error: err.message });
+        results.push({ matricule: singleUser.matricule, status: "Failed", error: err.message });
       }
     }
 

@@ -43,13 +43,13 @@ exports.createWithSuffix = async (req, res) => {
       return res.status(401).json({ message: "Access token required" });
     }
 
-    let username = null;
+    let matricule = null;
     jwt.verify(accessToken, config.secret, async (err, decoded) => {
       if (err) {
         return res.status(401).json({ message: "Invalid or expired token" });
       }
       const user = await User.findByPk(decoded.id);
-      username = user ? user.username : null;
+      matricule = user ? user.matricule : null;
 
       let code;
       let exists = true;
@@ -60,7 +60,7 @@ exports.createWithSuffix = async (req, res) => {
         if (!found) exists = false;
       }
 
-      const newTicketCode = await TicketCode.create({ code, operateur: username });
+      const newTicketCode = await TicketCode.create({ code, matricule: matricule });
       return res.status(201).json(newTicketCode);
     });
   } catch (error) {
@@ -102,10 +102,9 @@ exports.findAll = async (req, res) => {
         jwt.verify(accessToken, config.secret, async (err, decoded) => {
           if (!err) {
             const user = await User.findByPk(decoded.id);
-            const roles = await user.getRoles();
-            const roleNames = roles.map((r) => r.name);
-            if (roleNames.includes("operateur") && !roleNames.includes("superviseur") && !roleNames.includes("admin")) {
-              whereRole = { operateur: user.username };
+            // Check role attribute
+            if (user.role === "operateur") {
+              whereRole = { matricule: user.matricule };
             }
           }
           resolve();

@@ -13,7 +13,7 @@ async function updateMatricules() {
         for (const user of users) {
             user.matricule = currentMatricule.toString();
             await user.save();
-            console.log(`Updated user ${user.username} with matricule ${currentMatricule}`);
+            console.log(`Updated user with id ${user.id} with matricule ${currentMatricule}`);
             currentMatricule++;
         }
 

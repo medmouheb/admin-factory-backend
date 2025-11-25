@@ -23,7 +23,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.user = require("../models/user.model.js")(sequelize, Sequelize);
-db.role = require("../models/role.model.js")(sequelize, Sequelize);
+// db.role = require("../models/role.model.js")(sequelize, Sequelize);
 db.material = require("../models/material.model.js")(sequelize, Sequelize);
 db.part = require("../models/part.model.js")(sequelize, Sequelize);
 db.ticket = require("../models/ticket.model.js")(sequelize, Sequelize);
@@ -45,12 +45,12 @@ db.pieces.belongsTo(db.packets, {
   as: "packet",
 });
 
-db.role.belongsToMany(db.user, {
-  through: "user_roles"
-});
-db.user.belongsToMany(db.role, {
-  through: "user_roles"
-});
+// db.role.belongsToMany(db.user, {
+//   through: "user_roles"
+// });
+// db.user.belongsToMany(db.role, {
+//   through: "user_roles"
+// });
 
 db.history.belongsTo(db.user, {
   foreignKey: "userId",

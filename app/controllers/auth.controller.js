@@ -1,7 +1,7 @@
 const db = require("../models");
 const config = require("../config/auth.config");
 const User = db.user;
-const Role = db.role;
+// const Role = db.role; // Role model is removed
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -16,20 +16,14 @@ let refreshTokens = [];
 exports.signup = async (req, res) => {
   try {
     const user = await User.create({
-      username: req.body.username,
-      email: req.body.email,
       matricule: req.body.matricule,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      phone: req.body.phone,
+      email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 8),
+      role: req.body.role || "operateur" // Default role
     });
-
-    if (req.body.roles) {
-      const roles = await Role.findAll({
-        where: { name: { [Op.or]: req.body.roles } },
-      });
-      await user.setRoles(roles);
-    } else {
-      await user.setRoles([1]); // default role = user
-    }
 
     res.send({ message: "User registered successfully!" });
   } catch (err) {
@@ -43,7 +37,7 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   try {
     const user = await User.findOne({
-      where: { username: req.body.username },
+      where: { matricule: req.body.matricule },
     });
 
     if (!user) {
@@ -69,9 +63,6 @@ exports.signin = async (req, res) => {
 
     refreshTokens.push(refreshToken);
 
-    const roles = await user.getRoles();
-    const authorities = roles.map((role) => "ROLE_" + role.name.toUpperCase());
-
     const cookieOptionsToken = { httpOnly: true, sameSite: "lax", secure: false, maxAge: 86400 * 1000, path: "/" };
     const cookieOptionsRefresh = { httpOnly: true, sameSite: "lax", secure: false, maxAge: 7 * 24 * 60 * 60 * 1000, path: "/" };
     res.cookie("accessToken", accessToken, cookieOptionsToken);
@@ -79,10 +70,11 @@ exports.signin = async (req, res) => {
 
     res.status(200).send({
       id: user.id,
-      username: user.username,
-      email: user.email,
       matricule: user.matricule,
-      roles: authorities,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
       accessToken,
       refreshToken,
     });
@@ -169,16 +161,16 @@ exports.userInfo = (req, res) => {
     }
 
     try {
-      const user = await User.findByPk(decoded.id, { include: Role });
+      const user = await User.findByPk(decoded.id);
       if (!user) return res.status(404).send({ message: "User not found!" });
 
-      const roles = user.roles.map((r) => "ROLE_" + r.name.toUpperCase());
       res.send({
         id: user.id,
-        username: user.username,
-        email: user.email,
         matricule: user.matricule,
-        roles,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
       });
     } catch (error) {
       res.status(500).send({ message: error.message });
@@ -210,15 +202,15 @@ exports.session = async (req, res) => {
   jwt.verify(accessToken, config.secret, async (err, decoded) => {
     if (!err) {
       try {
-        const user = await User.findByPk(decoded.id, { include: Role });
+        const user = await User.findByPk(decoded.id);
         if (!user) return res.status(404).send({ message: "User not found!" });
-        const roles = user.roles.map((r) => "ROLE_" + r.name.toUpperCase());
         return res.status(200).send({
           id: user.id,
-          username: user.username,
-          email: user.email,
           matricule: user.matricule,
-          roles,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
         });
       } catch (error) {
         return res.status(500).send({ message: error.message });
@@ -247,15 +239,15 @@ exports.session = async (req, res) => {
         res.cookie("accessToken", newAccessToken, cookieOptionsToken);
         res.cookie("refreshToken", newRefreshToken, cookieOptionsRefresh);
         try {
-          const user = await User.findByPk(decoded2.id, { include: Role });
+          const user = await User.findByPk(decoded2.id);
           if (!user) return res.status(404).send({ message: "User not found!" });
-          const roles = user.roles.map((r) => "ROLE_" + r.name.toUpperCase());
           return res.status(200).send({
             id: user.id,
-            username: user.username,
-            email: user.email,
             matricule: user.matricule,
-            roles,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
             accessToken: newAccessToken,
             refreshToken: newRefreshToken,
           });
