@@ -5,10 +5,7 @@ module.exports = (sequelize, Sequelize) => {
       autoIncrement: true,
       primaryKey: true,
     },
-    learPN: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
+
     ticketCode: {
       type: Sequelize.STRING,
       allowNull: true,

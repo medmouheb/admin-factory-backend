@@ -16,5 +16,8 @@ module.exports = (app) => {
   // Delete one
   router.delete("/:id", ticketController.delete);
 
+  // Check if barcode exists
+  router.get("/check/:barcode", ticketController.checkBarcode);
+
   app.use("/api/tickets", router);
 };

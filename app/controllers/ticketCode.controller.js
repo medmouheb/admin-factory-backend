@@ -18,7 +18,7 @@ function generateRandomAlphanumeric(length) {
 // ✅ Create a new ticket code with user-provided last 5 characters
 exports.createWithSuffix = async (req, res) => {
   try {
-    const { suffix } = req.body;
+    const { suffix, learPN, quantity, hu } = req.body;
 
     if (!suffix || suffix.length !== 5) {
       return res.status(400).json({ message: "Suffix must be exactly 5 characters" });
@@ -60,7 +60,13 @@ exports.createWithSuffix = async (req, res) => {
         if (!found) exists = false;
       }
 
-      const newTicketCode = await TicketCode.create({ code, matricule: matricule });
+      const newTicketCode = await TicketCode.create({ 
+        code, 
+        matricule, 
+        learPN, 
+        quantity, 
+        hu 
+      });
       return res.status(201).json(newTicketCode);
     });
   } catch (error) {
@@ -78,6 +84,9 @@ exports.findAll = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || "";
+    const hu = req.query.hu || "";
+    const date = req.query.date || "";
+    const time = req.query.time || "";
     const offset = (page - 1) * limit;
 
     const cookieHeader = req.headers["cookie"];
@@ -113,7 +122,26 @@ exports.findAll = async (req, res) => {
     }
 
     const whereSearch = search ? { code: { [Op.like]: `%${search.toUpperCase()}%` } } : {};
-    const whereClause = { ...whereSearch, ...whereRole };
+    const whereHu = hu ? { hu: { [Op.like]: `%${hu}%` } } : {};
+
+    let whereDate = {};
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+
+      if (time) {
+        const [hours, minutes] = time.split(':');
+        if (hours && minutes) {
+          start.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+          end.setHours(parseInt(hours), parseInt(minutes), 59, 999);
+        }
+      }
+      whereDate = { createdAt: { [Op.between]: [start, end] } };
+    }
+
+    const whereClause = { ...whereSearch, ...whereRole, ...whereHu, ...whereDate };
 
     const { rows: data, count: totalItems } = await TicketCode.findAndCountAll({
       where: whereClause,

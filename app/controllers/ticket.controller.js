@@ -5,16 +5,19 @@ const { Op } = require("sequelize");
 // ✅ Create one Ticket
 exports.create = async (req, res) => {
   try {
-    const { learPN, ticketCode, barcode } = req.body;
+    const { ticketCode, barcode } = req.body;
 
-    if (!learPN || !barcode) {
-      return res.status(400).json({ message: "learPN and barcode are required" });
+    if (!barcode) {
+      return res.status(400).json({ message: "barcode is required" });
     }
 
-    const newTicket = await Ticket.create({ learPN, ticketCode, barcode });
+    const newTicket = await Ticket.create({ ticketCode, barcode });
     res.status(201).json(newTicket);
   } catch (error) {
     console.error("Create Ticket error:", error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ message: "Barcode must be unique" });
+    }
     res.status(500).json({ message: "Error creating Ticket", error: error.message });
   }
 };
@@ -29,8 +32,8 @@ exports.bulkCreate = async (req, res) => {
 
     // Validate data
     for (const t of tickets) {
-      if (!t.learPN || !t.barcode) {
-        return res.status(400).json({ message: "Each ticket must have learPN and barcode" });
+      if (!t.barcode) {
+        return res.status(400).json({ message: "Each ticket must have barcode" });
       }
     }
 
@@ -41,6 +44,9 @@ exports.bulkCreate = async (req, res) => {
     });
   } catch (error) {
     console.error("Bulk create Tickets error:", error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ message: "Barcode must be unique" });
+    }
     res.status(500).json({ message: "Error creating tickets", error: error.message });
   }
 };
@@ -103,5 +109,26 @@ exports.delete = async (req, res) => {
     res.status(200).json({ message: "Ticket deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting Ticket", error: error.message });
+  }
+};
+
+// ✅ Check if barcode exists
+exports.checkBarcode = async (req, res) => {
+  try {
+    const { barcode } = req.params;
+    if (!barcode) {
+      return res.status(400).json({ message: "Barcode is required" });
+    }
+
+    const ticket = await Ticket.findOne({ where: { barcode } });
+
+    if (ticket) {
+      return res.status(200).json({ exists: true, ticket });
+    } else {
+      return res.status(200).json({ exists: false });
+    }
+  } catch (error) {
+    console.error("Check Barcode error:", error);
+    res.status(500).json({ message: "Error checking barcode", error: error.message });
   }
 };

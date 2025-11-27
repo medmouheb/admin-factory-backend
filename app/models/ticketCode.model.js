@@ -14,6 +14,18 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: true,
     },
+    learPN: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    quantity: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
+    hu: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
   });
 
   return TicketCode;
