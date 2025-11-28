@@ -7,5 +7,7 @@ module.exports = (app) => {
 
   router.get("/ticket-code", [authJwt.verifyToken], ticketCodeController.findAll);
 
+  router.get("/check-hu-unique", [authJwt.verifyToken], ticketCodeController.checkHuUnique);
+
   app.use("/api/ticketscode", router);
 };

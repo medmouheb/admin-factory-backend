@@ -162,3 +162,25 @@ exports.findAll = async (req, res) => {
     res.status(500).json({ message: "Error fetching TicketCodes", error: error.message });
   }
 };
+
+// ✅ Check if HU is unique
+exports.checkHuUnique = async (req, res) => {
+  try {
+    const { hu } = req.query;
+
+    if (!hu) {
+      return res.status(400).json({ message: "HU parameter is required" });
+    }
+
+    const existingTicketCode = await TicketCode.findOne({ where: { hu } });
+
+    res.json({
+      hu,
+      isUnique: !existingTicketCode,
+      exists: !!existingTicketCode
+    });
+  } catch (error) {
+    console.error("Error checking HU uniqueness:", error);
+    res.status(500).json({ message: "Error checking HU uniqueness", error: error.message });
+  }
+};
