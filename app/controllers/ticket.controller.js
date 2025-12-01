@@ -132,3 +132,43 @@ exports.checkBarcode = async (req, res) => {
     res.status(500).json({ message: "Error checking barcode", error: error.message });
   }
 };
+
+// ✅ Update Ticket
+exports.update = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [updated] = await Ticket.update(req.body, {
+      where: { id: id }
+    });
+
+    if (updated) {
+      const updatedTicket = await Ticket.findByPk(id);
+      res.status(200).json(updatedTicket);
+    } else {
+      res.status(404).json({ message: "Ticket not found" });
+    }
+  } catch (error) {
+    console.error("Update Ticket error:", error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ message: "Barcode must be unique" });
+    }
+    res.status(500).json({ message: "Error updating Ticket", error: error.message });
+  }
+};
+
+// ✅ Get Ticket by Barcode
+exports.findByBarcode = async (req, res) => {
+  try {
+    const { barcode } = req.params;
+    const ticket = await Ticket.findOne({ where: { barcode } });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    res.status(200).json(ticket);
+  } catch (error) {
+    console.error("Find Ticket by Barcode error:", error);
+    res.status(500).json({ message: "Error fetching Ticket", error: error.message });
+  }
+};

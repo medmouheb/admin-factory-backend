@@ -9,5 +9,9 @@ module.exports = (app) => {
 
   router.get("/check-hu-unique", [authJwt.verifyToken], ticketCodeController.checkHuUnique);
 
+  router.put("/:id", [authJwt.verifyToken], ticketCodeController.update);
+
+  router.delete("/:id", [authJwt.verifyToken], ticketCodeController.delete);
+
   app.use("/api/ticketscode", router);
 };

@@ -19,5 +19,11 @@ module.exports = (app) => {
   // Check if barcode exists
   router.get("/check/:barcode", ticketController.checkBarcode);
 
+  // Update Ticket
+  router.put("/:id", ticketController.update);
+
+  // Get Ticket by Barcode
+  router.get("/barcode/:barcode", ticketController.findByBarcode);
+
   app.use("/api/tickets", router);
 };

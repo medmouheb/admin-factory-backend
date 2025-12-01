@@ -184,3 +184,42 @@ exports.checkHuUnique = async (req, res) => {
     res.status(500).json({ message: "Error checking HU uniqueness", error: error.message });
   }
 };
+
+// ✅ Update TicketCode
+exports.update = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [updated] = await TicketCode.update(req.body, {
+      where: { id: id }
+    });
+
+    if (updated) {
+      const updatedTicketCode = await TicketCode.findByPk(id);
+      res.status(200).json(updatedTicketCode);
+    } else {
+      res.status(404).json({ message: "TicketCode not found" });
+    }
+  } catch (error) {
+    console.error("Update TicketCode error:", error);
+    res.status(500).json({ message: "Error updating TicketCode", error: error.message });
+  }
+};
+
+// ✅ Delete TicketCode
+exports.delete = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deleted = await TicketCode.destroy({
+      where: { id: id }
+    });
+
+    if (deleted) {
+      res.status(200).json({ message: "TicketCode deleted successfully" });
+    } else {
+      res.status(404).json({ message: "TicketCode not found" });
+    }
+  } catch (error) {
+    console.error("Delete TicketCode error:", error);
+    res.status(500).json({ message: "Error deleting TicketCode", error: error.message });
+  }
+};
