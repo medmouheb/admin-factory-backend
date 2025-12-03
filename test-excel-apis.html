@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Import/Export Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="date"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button.secondary {
+            background-color: #2196F3;
+        }
+
+        button.secondary:hover {
+            background-color: #0b7dda;
+        }
+
+        button.tertiary {
+            background-color: #FF9800;
+        }
+
+        button.tertiary:hover {
+            background-color: #e68900;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .info {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Excel Import/Export API Test Page</h1>
+
+    <!-- Material Export -->
+    <div class="container">
+        <h2>1. Export Materials to Excel</h2>
+        <div class="info">
+            <strong>Endpoint:</strong> <code>GET /api/materials/export</code><br>
+            <strong>Description:</strong> Export materials filtered by date range
+        </div>
+        <div class="form-group">
+            <label for="materialStartDate">Start Date:</label>
+            <input type="date" id="materialStartDate" value="2025-01-01">
+        </div>
+        <div class="form-group">
+            <label for="materialEndDate">End Date:</label>
+            <input type="date" id="materialEndDate" value="2025-12-31">
+        </div>
+        <button onclick="exportMaterials()">Export Materials</button>
+        <div id="materialExportResult" class="result"></div>
+    </div>
+
+    <!-- Material Import -->
+    <div class="container">
+        <h2>2. Import Materials from Excel</h2>
+        <div class="info">
+            <strong>Endpoint:</strong> <code>POST /api/materials/import</code><br>
+            <strong>Description:</strong> Import materials from an Excel file<br>
+            <strong>Required columns:</strong> Material (B), Material Description (C), Available Stock (E)
+        </div>
+        <div class="form-group">
+            <label for="materialFile">Select Excel File:</label>
+            <input type="file" id="materialFile" accept=".xlsx,.xls">
+        </div>
+        <button onclick="importMaterials()">Import Materials</button>
+        <div id="materialImportResult" class="result"></div>
+    </div>
+
+    <!-- Part Export -->
+    <div class="container">
+        <h2>3. Export Parts to Excel</h2>
+        <div class="info">
+            <strong>Endpoint:</strong> <code>GET /api/parts/export</code><br>
+            <strong>Description:</strong> Export parts filtered by date range
+        </div>
+        <div class="form-group">
+            <label for="partStartDate">Start Date:</label>
+            <input type="date" id="partStartDate" value="2025-01-01">
+        </div>
+        <div class="form-group">
+            <label for="partEndDate">End Date:</label>
+            <input type="date" id="partEndDate" value="2025-12-31">
+        </div>
+        <button class="tertiary" onclick="exportParts()">Export Parts</button>
+        <div id="partExportResult" class="result"></div>
+    </div>
+
+    <!-- Part Import -->
+    <div class="container">
+        <h2>4. Import Parts from Excel</h2>
+        <div class="info">
+            <strong>Endpoint:</strong> <code>POST /api/parts/import</code><br>
+            <strong>Description:</strong> Import parts from an Excel file<br>
+            <strong>Required columns:</strong> Lear PN (B), Tesca PN (C), Description (D), Qty Per Box (E)
+        </div>
+        <div class="form-group">
+            <label for="partFile">Select Excel File:</label>
+            <input type="file" id="partFile" accept=".xlsx,.xls">
+        </div>
+        <button class="tertiary" onclick="importParts()">Import Parts</button>
+        <div id="partImportResult" class="result"></div>
+    </div>
+
+    <!-- Combined Ticket Export -->
+    <div class="container">
+        <h2>5. Export Combined Tickets and Ticket Codes</h2>
+        <div class="info">
+            <strong>Endpoint:</strong> <code>GET /api/tickets-combined/export</code><br>
+            <strong>Description:</strong> Export tickets combined with ticket codes (joined on ticket.ticketCode =
+            ticketCode.code)
+        </div>
+        <div class="form-group">
+            <label for="ticketStartDate">Start Date:</label>
+            <input type="date" id="ticketStartDate" value="2025-01-01">
+        </div>
+        <div class="form-group">
+            <label for="ticketEndDate">End Date:</label>
+            <input type="date" id="ticketEndDate" value="2025-12-31">
+        </div>
+        <button class="secondary" onclick="exportCombinedTickets()">Export Combined Data</button>
+        <div id="ticketExportResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080';
+
+        function showResult(elementId, message, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = isSuccess ? 'result success' : 'result error';
+            element.style.display = 'block';
+
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        async function exportMaterials() {
+            const startDate = document.getElementById('materialStartDate').value;
+            const endDate = document.getElementById('materialEndDate').value;
+
+            if (!startDate || !endDate) {
+                showResult('materialExportResult', 'Please select both start and end dates', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/api/materials/export?startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `materials_${startDate}_to_${endDate}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showResult('materialExportResult', 'Materials exported successfully!', true);
+            } catch (error) {
+                showResult('materialExportResult', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function importMaterials() {
+            const fileInput = document.getElementById('materialFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showResult('materialImportResult', 'Please select a file', false);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/materials/import`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                }
+
+                let message = data.message;
+                if (data.errors && data.errors.length > 0) {
+                    message += `\nWarnings: ${data.errors.join(', ')}`;
+                }
+
+                showResult('materialImportResult', message, true);
+                fileInput.value = ''; // Clear the file input
+            } catch (error) {
+                showResult('materialImportResult', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function exportParts() {
+            const startDate = document.getElementById('partStartDate').value;
+            const endDate = document.getElementById('partEndDate').value;
+
+            if (!startDate || !endDate) {
+                showResult('partExportResult', 'Please select both start and end dates', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/api/parts/export?startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `parts_${startDate}_to_${endDate}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showResult('partExportResult', 'Parts exported successfully!', true);
+            } catch (error) {
+                showResult('partExportResult', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function importParts() {
+            const fileInput = document.getElementById('partFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showResult('partImportResult', 'Please select a file', false);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/parts/import`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                }
+
+                let message = data.message;
+                if (data.errors && data.errors.length > 0) {
+                    message += `\nWarnings: ${data.errors.join(', ')}`;
+                }
+
+                showResult('partImportResult', message, true);
+                fileInput.value = ''; // Clear the file input
+            } catch (error) {
+                showResult('partImportResult', `Error: ${error.message}`, false);
+            }
+        }
+
+        async function exportCombinedTickets() {
+            const startDate = document.getElementById('ticketStartDate').value;
+            const endDate = document.getElementById('ticketEndDate').value;
+
+            if (!startDate || !endDate) {
+                showResult('ticketExportResult', 'Please select both start and end dates', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tickets_combined_${startDate}_to_${endDate}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showResult('ticketExportResult', 'Combined tickets exported successfully!', true);
+            } catch (error) {
+                showResult('ticketExportResult', `Error: ${error.message}`, false);
+            }
+        }
+    </script>
+</body>
+
+</html>
