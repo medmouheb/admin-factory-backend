@@ -6,10 +6,10 @@ module.exports = app => {
     const { authJwt } = require("../middleware");
 
     // Create a new Packet
-    router.post("/", packets.create);
+    router.post("/", [authJwt.verifyToken], packets.create);
 
     // Retrieve all Packets
-    router.get("/", packets.findAll);
+    router.get("/", [authJwt.verifyToken], packets.findAll);
 
     // Retrieve a single Packet with id
     router.get("/:id", [authJwt.verifyToken], packets.findOne);

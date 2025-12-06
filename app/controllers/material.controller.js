@@ -2,11 +2,13 @@ const db = require("../models");
 const Material = db.material;
 const { Op } = require("sequelize");
 const ExcelJS = require("exceljs");
+const { logAction } = require("../utils/logger");
 
 // Create new material
 exports.create = async (req, res) => {
   try {
     const material = await Material.create(req.body);
+    await logAction(req.userId, "Material", "CREATE", null, material);
     res.status(201).send(material);
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -36,8 +38,14 @@ exports.findOne = async (req, res) => {
 // Update material
 exports.update = async (req, res) => {
   try {
+    const previous = await Material.findByPk(req.params.id);
     const [updated] = await Material.update(req.body, { where: { id: req.params.id } });
-    updated ? res.send({ message: "Material updated successfully" }) : res.status(404).send({ message: "Not found" });
+    if (updated) {
+       await logAction(req.userId, "Material", "UPDATE", previous, req.body);
+       res.send({ message: "Material updated successfully" });
+    } else {
+       res.status(404).send({ message: "Not found" });
+    }
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -46,8 +54,14 @@ exports.update = async (req, res) => {
 // Delete material
 exports.delete = async (req, res) => {
   try {
+    const previous = await Material.findByPk(req.params.id);
     const deleted = await Material.destroy({ where: { id: req.params.id } });
-    deleted ? res.send({ message: "Material deleted" }) : res.status(404).send({ message: "Not found" });
+    if (deleted) {
+      await logAction(req.userId, "Material", "DELETE", previous, null);
+      res.send({ message: "Material deleted" });
+    } else {
+      res.status(404).send({ message: "Not found" });
+    }
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -57,15 +71,31 @@ exports.delete = async (req, res) => {
 exports.search = async (req, res) => {
   try {
     const q = req.query.q || "";
-    const materials = await Material.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { rows: materials, count: totalItems } = await Material.findAndCountAll({
       where: {
         [Op.or]: [
           { material: { [Op.like]: `%${q}%` } },
           { materialDescription: { [Op.like]: `%${q}%` } }
         ]
-      }
+      },
+      offset,
+      limit
     });
-    res.send(materials);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.send({
+      page,
+      limit,
+      totalItems,
+      totalPages,
+      data: materials
+    });
+
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -226,6 +256,8 @@ exports.importFromExcel = async (req, res) => {
       imported: created.length,
       errors: errors.length > 0 ? errors : undefined
     });
+    
+    await logAction(req.userId, "Material", "IMPORT", null, { count: created.length });
   } catch (err) {
     console.error("Import error:", err);
     res.status(500).send({ message: err.message });

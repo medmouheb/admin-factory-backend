@@ -1,6 +1,7 @@
 const db = require("../models");
 const Ticket = db.ticket;
 const { Op } = require("sequelize");
+const { logAction } = require("../utils/logger");
 
 // ✅ Create one Ticket
 exports.create = async (req, res) => {
@@ -12,6 +13,7 @@ exports.create = async (req, res) => {
     }
 
     const newTicket = await Ticket.create({ ticketCode, barcode });
+    await logAction(req.userId, "Ticket", "CREATE", null, newTicket);
     res.status(201).json(newTicket);
   } catch (error) {
     console.error("Create Ticket error:", error);
@@ -38,6 +40,7 @@ exports.bulkCreate = async (req, res) => {
     }
 
     const createdTickets = await Ticket.bulkCreate(tickets, { ignoreDuplicates: true });
+    await logAction(req.userId, "Ticket", "BULK_CREATE", null, { count: createdTickets.length });
     res.status(201).json({
       message: `${createdTickets.length} tickets created successfully`,
       data: createdTickets,
@@ -104,8 +107,10 @@ exports.findOne = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const id = req.params.id;
+    const previous = await Ticket.findByPk(id);
     const deleted = await Ticket.destroy({ where: { id } });
     if (!deleted) return res.status(404).json({ message: "Ticket not found" });
+    await logAction(req.userId, "Ticket", "DELETE", previous, null);
     res.status(200).json({ message: "Ticket deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting Ticket", error: error.message });
@@ -137,12 +142,14 @@ exports.checkBarcode = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const id = req.params.id;
+    const previous = await Ticket.findByPk(id);
     const [updated] = await Ticket.update(req.body, {
       where: { id: id }
     });
 
     if (updated) {
       const updatedTicket = await Ticket.findByPk(id);
+      await logAction(req.userId, "Ticket", "UPDATE", previous, req.body);
       res.status(200).json(updatedTicket);
     } else {
       res.status(404).json({ message: "Ticket not found" });

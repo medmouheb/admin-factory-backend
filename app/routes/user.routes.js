@@ -20,7 +20,7 @@ module.exports = function (app) {
 
   app.get(
     "/api/test/mod",
-    // [authJwt.verifyToken, authJwt.isModerator],
+    [authJwt.verifyToken, authJwt.isModerator],
     controller.moderatorBoard
   );
 
@@ -32,13 +32,13 @@ module.exports = function (app) {
 
   app.post(
     "/api/users",
-    //[authJwt.verifyToken, authJwt.isAdmin],
+    [authJwt.verifyToken, authJwt.isAdmin],
     controller.createUser
   );
 
   app.get(
     "/api/users/search",
-    // [authJwt.verifyToken, authJwt.isAdmin],
+    [authJwt.verifyToken], // Removed isAdmin enforcement for now if users need to search, or keep it if admin only. Re-enabling at least verifyToken.
     controller.searchUsers
   );
 

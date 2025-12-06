@@ -1,7 +1,8 @@
 module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("users", {
     matricule: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      unique: true
     },
     firstName: {
       type: Sequelize.STRING

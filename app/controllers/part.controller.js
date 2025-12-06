@@ -2,11 +2,13 @@ const db = require("../models");
 const Part = db.part;
 const { Op } = require("sequelize");
 const ExcelJS = require("exceljs");
+const { logAction } = require("../utils/logger");
 
 // Create new part
 exports.create = async (req, res) => {
   try {
     const part = await Part.create(req.body);
+    await logAction(req.userId, "Part", "CREATE", null, part);
     res.status(201).send(part);
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -37,8 +39,14 @@ exports.findOne = async (req, res) => {
 // Update part
 exports.update = async (req, res) => {
   try {
+    const previous = await Part.findByPk(req.params.id);
     const [updated] = await Part.update(req.body, { where: { id: req.params.id } });
-    updated ? res.send({ message: "Part updated successfully" }) : res.status(404).send({ message: "Not found" });
+    if (updated) {
+       await logAction(req.userId, "Part", "UPDATE", previous, req.body);
+       res.send({ message: "Part updated successfully" });
+    } else {
+       res.status(404).send({ message: "Not found" });
+    }
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -47,8 +55,14 @@ exports.update = async (req, res) => {
 // Delete part
 exports.delete = async (req, res) => {
   try {
+    const previous = await Part.findByPk(req.params.id);
     const deleted = await Part.destroy({ where: { id: req.params.id } });
-    deleted ? res.send({ message: "Part deleted" }) : res.status(404).send({ message: "Not found" });
+    if (deleted) {
+      await logAction(req.userId, "Part", "DELETE", previous, null);
+      res.send({ message: "Part deleted" });
+    } else {
+      res.status(404).send({ message: "Not found" });
+    }
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -58,16 +72,32 @@ exports.delete = async (req, res) => {
 exports.search = async (req, res) => {
   try {
     const q = req.query.q || "";
-    const parts = await Part.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { rows: parts, count: totalItems } = await Part.findAndCountAll({
       where: {
         [Op.or]: [
           { learPN: { [Op.like]: `%${q}%` } },
-          { tescaPN: { [Op.like]: `%${q}%` } },
-          { desc: { [Op.like]: `%${q}%` } }
+          { tescaPN: { [Op.like] : `%${q}%` } },
+          { desc: { [Op.like] : `%${q}%` } }
         ]
-      }
+      },
+      offset,
+      limit
     });
-    res.send(parts);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.send({
+      page,
+      limit,
+      totalItems,
+      totalPages,
+      data: parts
+    });
+
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
@@ -217,6 +247,8 @@ exports.importFromExcel = async (req, res) => {
       imported: created.length,
       errors: errors.length > 0 ? errors : undefined
     });
+
+    await logAction(req.userId, "Part", "IMPORT", null, { count: created.length });
   } catch (err) {
     console.error("Import error:", err);
     res.status(500).send({ message: err.message });

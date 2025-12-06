@@ -3,6 +3,7 @@ const User = db.user;
 // const Role = db.role; // Removed
 const { Op } = db.Sequelize;
 const bcrypt = require("bcryptjs");
+const { logAction } = require("../utils/logger");
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
@@ -23,6 +24,7 @@ exports.moderatorBoard = (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const id = req.params.id;
+    const previous = await User.findByPk(id);
     const payload = {};
     if (req.body.firstName !== undefined) payload.firstName = req.body.firstName;
     if (req.body.lastName !== undefined) payload.lastName = req.body.lastName;
@@ -34,6 +36,7 @@ exports.updateUser = async (req, res) => {
     const [updated] = await User.update(payload, { where: { id } });
     if (updated === 1) {
       const user = await User.findByPk(id);
+      await logAction(req.userId, "User", "UPDATE", previous, user);
       return res.status(200).send(user);
     } else {
       return res.status(404).send({ message: "User not found" });
@@ -46,8 +49,10 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
+    const previous = await User.findByPk(id);
     const deleted = await User.destroy({ where: { id } });
     if (deleted === 1) {
+      await logAction(req.userId, "User", "DELETE", previous, null);
       return res.status(200).send({ message: "User deleted successfully" });
     } else {
       return res.status(404).send({ message: "User not found" });
@@ -128,7 +133,8 @@ exports.createUser = async (req, res) => {
           password: bcrypt.hashSync(singleUser.password, 8),
           role: singleUser.role || "operateur"
         });
-
+        
+        await logAction(req.userId, "User", "CREATE", null, user);
         results.push({ matricule: singleUser.matricule, status: "Success" });
       } catch (err) {
         results.push({ matricule: singleUser.matricule, status: "Failed", error: err.message });

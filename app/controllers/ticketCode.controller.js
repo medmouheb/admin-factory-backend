@@ -4,6 +4,7 @@ const User = db.user;
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
+const { logAction } = require("../utils/logger");
 
 // Helper function to generate random alphanumeric string of given length
 function generateRandomAlphanumeric(length) {
@@ -67,6 +68,7 @@ exports.createWithSuffix = async (req, res) => {
         quantity, 
         hu 
       });
+      await logAction(decoded.id, "TicketCode", "CREATE", null, newTicketCode);
       return res.status(201).json(newTicketCode);
     });
   } catch (error) {
@@ -189,12 +191,14 @@ exports.checkHuUnique = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const id = req.params.id;
+    const previous = await TicketCode.findByPk(id);
     const [updated] = await TicketCode.update(req.body, {
       where: { id: id }
     });
 
     if (updated) {
       const updatedTicketCode = await TicketCode.findByPk(id);
+      await logAction(req.userId, "TicketCode", "UPDATE", previous, updatedTicketCode);
       res.status(200).json(updatedTicketCode);
     } else {
       res.status(404).json({ message: "TicketCode not found" });
@@ -209,11 +213,13 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const id = req.params.id;
+    const previous = await TicketCode.findByPk(id);
     const deleted = await TicketCode.destroy({
       where: { id: id }
     });
 
     if (deleted) {
+      await logAction(req.userId, "TicketCode", "DELETE", previous, null);
       res.status(200).json({ message: "TicketCode deleted successfully" });
     } else {
       res.status(404).json({ message: "TicketCode not found" });

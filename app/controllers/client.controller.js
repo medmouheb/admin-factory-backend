@@ -1,6 +1,7 @@
 const db = require("../models");
 const Client = db.client;
 const { Op } = db.Sequelize;
+const { logAction } = require("../utils/logger");
 
 /**
  * ➕ Create new client
@@ -19,6 +20,7 @@ exports.create = async (req, res) => {
       longitude,
     });
 
+    await logAction(req.userId, "Client", "CREATE", null, client);
     res.status(201).send(client);
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -81,8 +83,12 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
+    const previous = await Client.findByPk(id);
     const updated = await Client.update(req.body, { where: { id } });
-    if (updated[0] === 1) res.send({ message: "Client updated successfully" });
+    if (updated[0] === 1) {
+      await logAction(req.userId, "Client", "UPDATE", previous, req.body);
+      res.send({ message: "Client updated successfully" });
+    }
     else res.status(404).send({ message: "Client not found" });
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -98,9 +104,11 @@ exports.archive = async (req, res) => {
     const client = await Client.findByPk(id);
     if (!client) return res.status(404).send({ message: "Client not found" });
 
+    const previous = { ...client.dataValues, archived: false }; // snapshot
     client.archived = true;
     await client.save();
-
+    
+    await logAction(req.userId, "Client", "ARCHIVE", previous, client);
     res.send({ message: "Client archived successfully" });
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -114,9 +122,11 @@ exports.active = async (req, res) => {
     const client = await Client.findByPk(id);
     if (!client) return res.status(404).send({ message: "Client not found" });
 
+    const previous = { ...client.dataValues, archived: true }; // snapshot
     client.archived = false;
     await client.save();
 
+    await logAction(req.userId, "Client", "ACTIVATE", previous, client);
     res.send({ message: "Client activated successfully" });
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -137,7 +147,10 @@ exports.delete = async (req, res) => {
         .send({ message: "Client must be archived before deletion" });
     }
 
+    const previous = client.dataValues;
     await client.destroy();
+    
+    await logAction(req.userId, "Client", "DELETE", previous, null);
     res.send({ message: "Client permanently deleted" });
   } catch (err) {
     res.status(500).send({ message: err.message });
