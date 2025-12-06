@@ -3,7 +3,7 @@ module.exports = (app) => {
   const { authJwt } = require("../middleware");
   const router = require("express").Router();
 
-  router.post("/creat", [authJwt.verifyToken], ticketCodeController.createWithSuffix);
+  router.post("/create", [authJwt.verifyToken], ticketCodeController.createWithSuffix);
 
   router.get("/ticket-code", [authJwt.verifyToken], ticketCodeController.findAll);
 

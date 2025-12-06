@@ -29,7 +29,7 @@ exports.findAll = async (req, res) => {
 exports.findOne = async (req, res) => {
   try {
 
-    const part = await Part.findByPk(req.params.learPN);
+    const part = await Part.findByPk(req.params.id);
     part ? res.send(part) : res.status(404).send({ message: "Not found" });
   } catch (err) {
     res.status(500).send({ message: err.message });
