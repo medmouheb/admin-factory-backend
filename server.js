@@ -47,6 +47,7 @@ require('./app/routes/piece.routes')(app);
 require('./app/routes/history.routes')(app);
 require('./app/routes/ticketCombined.routes')(app);
 require('./app/routes/log.routes')(app);
+require('./app/routes/stats.routes')(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

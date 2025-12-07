@@ -107,10 +107,23 @@ exports.findOne = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const id = req.params.id;
-    const previous = await Ticket.findByPk(id);
+    const ticket = await Ticket.findByPk(id);
+    
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    // Decrement quantity in TicketCode
+    const TicketCode = db.ticketCode; // Ensure TicketCode is available
+    if (ticket.ticketCode) {
+      const ticketCodeEntry = await TicketCode.findOne({ where: { code: ticket.ticketCode } });
+      if (ticketCodeEntry && ticketCodeEntry.quantity > 0) {
+        await ticketCodeEntry.decrement('quantity');
+      }
+    }
+
     const deleted = await Ticket.destroy({ where: { id } });
-    if (!deleted) return res.status(404).json({ message: "Ticket not found" });
-    await logAction(req.userId, "Ticket", "DELETE", previous, null);
+    await logAction(req.userId, "Ticket", "DELETE", ticket, null);
     res.status(200).json({ message: "Ticket deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting Ticket", error: error.message });

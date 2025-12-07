@@ -149,7 +149,6 @@ exports.exportToExcel = async (req, res) => {
 
     // Define columns
     worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
       { header: "Material", key: "material", width: 20 },
       { header: "Material Description", key: "materialDescription", width: 40 },
       { header: "Storage Unit", key: "storageUn", width: 20 },
@@ -161,7 +160,6 @@ exports.exportToExcel = async (req, res) => {
     // Add rows
     materials.forEach(material => {
       worksheet.addRow({
-        id: material.id,
         material: material.material,
         materialDescription: material.materialDescription,
         storageUn: material.storageUn,

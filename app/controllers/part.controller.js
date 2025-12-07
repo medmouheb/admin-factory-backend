@@ -140,7 +140,6 @@ exports.exportToExcel = async (req, res) => {
 
     // Define columns
     worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
       { header: "Lear PN", key: "learPN", width: 20 },
       { header: "Tesca PN", key: "tescaPN", width: 20 },
       { header: "Description", key: "desc", width: 40 },
@@ -152,7 +151,6 @@ exports.exportToExcel = async (req, res) => {
     // Add rows
     parts.forEach(part => {
       worksheet.addRow({
-        id: part.id,
         learPN: part.learPN,
         tescaPN: part.tescaPN,
         desc: part.desc,
