@@ -54,6 +54,7 @@ module.exports = function (app) {
     controller.updateUser
   );
 
+  // admin only and manager only
   app.delete(
     "/api/users/:id",
     [authJwt.verifyToken, authJwt.isAdmin],
