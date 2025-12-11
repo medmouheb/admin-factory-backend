@@ -7,7 +7,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     code: {
       type: Sequelize.STRING(10),
-      unique: true,
+      unique: false,
       allowNull: false,
     },
     matricule: {

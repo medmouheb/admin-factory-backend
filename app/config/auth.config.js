@@ -1,3 +1,4 @@
 module.exports = {
-  secret: "factoey-secret-key"
+  secret: process.env.JWT_SECRET || "factory-secret-key"
 };
+
