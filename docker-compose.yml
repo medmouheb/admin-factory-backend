@@ -1,0 +1,39 @@
+
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: factory-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    ports:
+      - "3307:3306" # Expose sur 3307 pour ne pas conflire avec un MySQL local
+    volumes:
+      - db_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: factory-api
+    restart: always
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysqldb
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - PORT=8080
+
+volumes:
+  db_data:
