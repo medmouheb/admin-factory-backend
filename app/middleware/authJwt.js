@@ -38,7 +38,7 @@ verifyToken = (req, res, next) => {
 
 isAdmin = (req, res, next) => {
   User.findByPk(req.userId).then(user => {
-    if (user.role === "admin") {
+    if (user.role === "admin" || user.role === "manager") {
       next();
       return;
     }
@@ -65,7 +65,7 @@ isModerator = (req, res, next) => {
 
 isModeratorOrAdmin = (req, res, next) => {
   User.findByPk(req.userId).then(user => {
-    if (user.role === "superviseur" || user.role === "admin") {
+    if (user.role === "superviseur" || user.role === "admin" || user.role === "manager") {
       next();
       return;
     }

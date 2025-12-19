@@ -40,7 +40,7 @@ db.log = require("../models/log.model.js")(sequelize, Sequelize);
 
 
 
-db.packets.hasMany(db.pieces, { as: "pieces" });
+db.packets.hasMany(db.pieces, { as: "pieces", foreignKey: "packetId" });
 db.pieces.belongsTo(db.packets, {
   foreignKey: "packetId",
   as: "packet",
@@ -63,6 +63,35 @@ db.log.belongsTo(db.user, {
   targetKey: "matricule",
   as: "user"
 });
+
+db.boxType = require("../models/boxType.model.js")(sequelize, Sequelize);
+db.boxTypePiece = require("../models/boxTypePiece.model.js")(sequelize, Sequelize);
+db.box = require("../models/box.model.js")(sequelize, Sequelize);
+db.boxPiece = require("../models/boxPiece.model.js")(sequelize, Sequelize);
+db.boxRequest = require("../models/boxRequest.model.js")(sequelize, Sequelize);
+
+// Associations for BoxType
+db.boxType.hasMany(db.boxTypePiece, { as: "pieces", foreignKey: "boxTypeId" });
+db.boxTypePiece.belongsTo(db.boxType, {
+  foreignKey: "boxTypeId",
+  as: "boxType",
+});
+
+// Associations for Box
+db.box.hasMany(db.boxPiece, { as: "pieces", foreignKey: "boxId" });
+db.boxPiece.belongsTo(db.box, {
+  foreignKey: "boxId",
+  as: "box",
+});
+// Optional: box belongs to boxtype by code? Or just loose coupling as per user schema (boxtypeCode string)
+// We can strictly associate if we want, but user Schema has `boxtypeCode` string.
+// Let's add a proper FK relationship for better query support if possible, or stick to manual code check.
+// I'll stick to string as requested but using boxType object ensures referential integrity. 
+// Given the user instruction "Verification", I will do it manually in controller or via hook.
+
+// BoxRequest
+db.boxRequest.belongsTo(db.boxType, { foreignKey: 'boxtypeCode', targetKey: 'code', as: 'boxtype' }); // If possible.
+
 
 db.ROLES = ["operateur", "superviseur", "admin"];
 db.AccessTos = ["scan", "upload", "clients"];
