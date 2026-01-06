@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Box Management System - API Test Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #eee;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #666;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+    
+    .tab:hover {
+      color: #667eea;
+    }
+    
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      font-weight: 600;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .section h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: transform 0.2s;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button.secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    button.danger {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    
+    .response {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .card h4 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    
+    #result-display {
+      margin-top: 30px;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 5px;
+    }
+    
+    .badge-add {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .badge-subtract {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    img.preview {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📦 Box Management System</h1>
+    <p class="subtitle">API Testing Interface</p>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('parentbox')">ParentBox</button>
+      <button class="tab" onclick="switchTab('boxpart')">BoxPart</button>
+      <button class="tab" onclick="switchTab('movement')">BoxMovement</button>
+    </div>
+    
+    <!-- ParentBox Tab -->
+    <div id="parentbox" class="tab-content active">
+      <div class="section">
+        <h3>📝 Create ParentBox</h3>
+        <div class="form-group">
+          <label>ParentBoxCode *</label>
+          <input type="text" id="pb-code" placeholder="e.g., PB-001-VOLVO-ENGINE">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="pb-description" placeholder="e.g., This box is full of parts of a Volvo engine"></textarea>
+        </div>
+        <button onclick="createParentBox()">Create ParentBox</button>
+      </div>
+      
+      <div class="section">
+        <h3>🔍 Search & Retrieve ParentBox</h3>
+        <div class="form-group">
+          <label>Search Query</label>
+          <input type="text" id="pb-search" placeholder="Search by code or description">
+        </div>
+        <button onclick="searchParentBox()">Search</button>
+        <button class="secondary" onclick="getAllParentBoxes()">Get All</button>
+        
+        <div class="form-group" style="margin-top: 15px;">
+          <label>Get by Code</label>
+          <input type="text" id="pb-getcode" placeholder="Enter ParentBoxCode">
+        </div>
+        <button onclick="getParentBoxByCode()">Get by Code</button>
+      </div>
+      
+      <div class="section">
+        <h3>✏️ Update ParentBox</h3>
+        <div class="form-group">
+          <label>ParentBoxCode *</label>
+          <input type="text" id="pb-update-code" placeholder="Code to update">
+        </div>
+        <div class="form-group">
+          <label>New Description</label>
+          <textarea id="pb-update-description" placeholder="New description"></textarea>
+        </div>
+        <button onclick="updateParentBox()">Update</button>
+      </div>
+      
+      <div class="section">
+        <h3>🗑️ Delete ParentBox</h3>
+        <div class="form-group">
+          <label>ParentBoxCode *</label>
+          <input type="text" id="pb-delete-code" placeholder="Code to delete">
+        </div>
+        <button class="danger" onclick="deleteParentBox()">Delete</button>
+      </div>
+    </div>
+    
+    <!-- BoxPart Tab -->
+    <div id="boxpart" class="tab-content">
+      <div class="section">
+        <h3>📝 Create BoxPart</h3>
+        <div class="form-group">
+          <label>BoxPartCode *</label>
+          <input type="text" id="bp-code" placeholder="e.g., BP-001-PIN">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="bp-description" placeholder="e.g., Pin that holds the engine red wire"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Regular Demand</label>
+          <input type="number" id="bp-demand" value="0">
+        </div>
+        <div class="form-group">
+          <label>Initial Inventory</label>
+          <input type="number" id="bp-inventory" value="0">
+        </div>
+        <div class="form-group">
+          <label>ParentBoxCode</label>
+          <input type="text" id="bp-parent" placeholder="Optional parent box code">
+        </div>
+        <div class="form-group">
+          <label>Picture (jpg, png, gif, webp - max 5MB)</label>
+          <input type="file" id="bp-picture" accept="image/*">
+        </div>
+        <button onclick="createBoxPart()">Create BoxPart</button>
+      </div>
+      
+      <div class="section">
+        <h3>🔍 Search & Retrieve BoxPart</h3>
+        <div class="form-group">
+          <label>Search Query</label>
+          <input type="text" id="bp-search" placeholder="Search by code or description">
+        </div>
+        <button onclick="searchBoxPart()">Search</button>
+        <button class="secondary" onclick="getAllBoxParts()">Get All</button>
+        
+        <div class="form-group" style="margin-top: 15px;">
+          <label>Get by Code</label>
+          <input type="text" id="bp-getcode" placeholder="Enter BoxPartCode">
+        </div>
+        <button onclick="getBoxPartByCode()">Get by Code</button>
+        <button class="secondary" onclick="getBoxPartPicture()">Get Picture</button>
+      </div>
+      
+      <div class="section">
+        <h3>✏️ Update BoxPart</h3>
+        <div class="form-group">
+          <label>BoxPartCode *</label>
+          <input type="text" id="bp-update-code" placeholder="Code to update">
+        </div>
+        <div class="form-group">
+          <label>New Description</label>
+          <textarea id="bp-update-description" placeholder="New description (optional)"></textarea>
+        </div>
+        <div class="form-group">
+          <label>New Regular Demand</label>
+          <input type="number" id="bp-update-demand" placeholder="Leave empty to keep current">
+        </div>
+        <div class="form-group">
+          <label>New Picture (optional)</label>
+          <input type="file" id="bp-update-picture" accept="image/*">
+        </div>
+        <button onclick="updateBoxPart()">Update</button>
+      </div>
+      
+      <div class="section">
+        <h3>🗑️ Delete BoxPart</h3>
+        <div class="form-group">
+          <label>BoxPartCode *</label>
+          <input type="text" id="bp-delete-code" placeholder="Code to delete">
+        </div>
+        <button class="danger" onclick="deleteBoxPart()">Delete</button>
+      </div>
+    </div>
+    
+    <!-- BoxMovement Tab -->
+    <div id="movement" class="tab-content">
+      <div class="section">
+        <h3>📝 Create BoxMovement</h3>
+        <div class="form-group">
+          <label>Movement ID *</label>
+          <input type="text" id="bm-id" placeholder="e.g., BM-20260106-001">
+        </div>
+        <div class="form-group">
+          <label>ParentBoxCode *</label>
+          <input type="text" id="bm-parent" placeholder="e.g., PB-001-VOLVO-ENGINE">
+        </div>
+        <div class="form-group">
+          <label>Movement Type *</label>
+          <select id="bm-type">
+            <option value="add">Add (Increase Inventory)</option>
+            <option value="subtract">Subtract (Decrease Inventory)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>BoxParts Demanded (JSON Format) *</label>
+          <textarea id="bm-parts" placeholder='[{"BoxPartCode":"BP-001-PIN","demand":10},{"BoxPartCode":"BP-002-WIRE","demand":25}]' style="min-height: 120px;"></textarea>
+          <small style="color: #666;">Format: Array of objects with BoxPartCode and demand</small>
+        </div>
+        <button onclick="createBoxMovement()">Create Movement</button>
+      </div>
+      
+      <div class="section">
+        <h3>🔍 Search & Retrieve BoxMovement</h3>
+        <div class="form-group">
+          <label>Search Query</label>
+          <input type="text" id="bm-search" placeholder="Search by ID or ParentBoxCode">
+        </div>
+        <button onclick="searchBoxMovement()">Search</button>
+        <button class="secondary" onclick="getAllBoxMovements()">Get All</button>
+        
+        <div class="form-group" style="margin-top: 15px;">
+          <label>Get by ID</label>
+          <input type="text" id="bm-getid" placeholder="Enter Movement ID">
+        </div>
+        <button onclick="getBoxMovementById()">Get by ID</button>
+        
+        <div class="form-group" style="margin-top: 15px;">
+          <label>Get by ParentBoxCode</label>
+          <input type="text" id="bm-getparent" placeholder="Enter ParentBoxCode">
+        </div>
+        <button onclick="getBoxMovementByParent()">Get by ParentBox</button>
+      </div>
+      
+      <div class="section">
+        <h3>✏️ Update BoxMovement</h3>
+        <div class="form-group">
+          <label>Movement ID *</label>
+          <input type="text" id="bm-update-id" placeholder="Movement ID to update">
+        </div>
+        <div class="form-group">
+          <label>Movement Type</label>
+          <select id="bm-update-type">
+            <option value="">Keep current</option>
+            <option value="add">Add</option>
+            <option value="subtract">Subtract</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>New BoxParts Demanded (JSON Format)</label>
+          <textarea id="bm-update-parts" placeholder='Leave empty to keep current or enter new JSON array' style="min-height: 100px;"></textarea>
+        </div>
+        <button onclick="updateBoxMovement()">Update</button>
+      </div>
+      
+      <div class="section">
+        <h3>🗑️ Delete BoxMovement</h3>
+        <div class="form-group">
+          <label>Movement ID *</label>
+          <input type="text" id="bm-delete-id" placeholder="Movement ID to delete">
+        </div>
+        <small style="color: #666;">Note: This will reverse the inventory changes</small>
+        <br><br>
+        <button class="danger" onclick="deleteBoxMovement()">Delete</button>
+      </div>
+    </div>
+    
+    <div id="result-display"></div>
+  </div>
+  
+  <script>
+    const API_BASE = 'http://localhost:8080/api';
+    
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    }
+    
+    function showResult(data, success = true) {
+      const display = document.getElementById('result-display');
+      const className = success ? 'success' : 'error';
+      const formatted = JSON.stringify(data, null, 2);
+      
+      display.innerHTML = `
+        <div class="${className}">
+          ${success ? '✅ Success!' : '❌ Error!'}
+        </div>
+        <div class="response">${formatted}</div>
+      `;
+      
+      display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    async function apiCall(url, options = {}) {
+      try {
+        const response = await fetch(url, {
+          ...options,
+          credentials: 'include'
+        });
+        
+        const data = await response.json().catch(() => ({ message: response.statusText }));
+        
+        if (!response.ok) {
+          showResult(data, false);
+          return null;
+        }
+        
+        showResult(data, true);
+        return data;
+      } catch (error) {
+        showResult({ error: error.message }, false);
+        return null;
+      }
+    }
+    
+    // ParentBox Functions
+    async function createParentBox() {
+      const code = document.getElementById('pb-code').value;
+      const description = document.getElementById('pb-description').value;
+      
+      await apiCall(`${API_BASE}/parentbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ParentBoxCode: code, description })
+      });
+    }
+    
+    async function getAllParentBoxes() {
+      await apiCall(`${API_BASE}/parentbox`);
+    }
+    
+    async function searchParentBox() {
+      const query = document.getElementById('pb-search').value;
+      await apiCall(`${API_BASE}/parentbox/search?q=${encodeURIComponent(query)}`);
+    }
+    
+    async function getParentBoxByCode() {
+      const code = document.getElementById('pb-getcode').value;
+      await apiCall(`${API_BASE}/parentbox/code/${encodeURIComponent(code)}`);
+    }
+    
+    async function updateParentBox() {
+      const code = document.getElementById('pb-update-code').value;
+      const description = document.getElementById('pb-update-description').value;
+      
+      await apiCall(`${API_BASE}/parentbox/${encodeURIComponent(code)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description })
+      });
+    }
+    
+    async function deleteParentBox() {
+      const code = document.getElementById('pb-delete-code').value;
+      if (!confirm(`Are you sure you want to delete ParentBox ${code}?`)) return;
+      
+      await apiCall(`${API_BASE}/parentbox/${encodeURIComponent(code)}`, {
+        method: 'DELETE'
+      });
+    }
+    
+    // BoxPart Functions
+    async function createBoxPart() {
+      const formData = new FormData();
+      formData.append('BoxPartCode', document.getElementById('bp-code').value);
+      formData.append('description', document.getElementById('bp-description').value);
+      formData.append('regularDemand', document.getElementById('bp-demand').value);
+      formData.append('inventoryTotalNumber', document.getElementById('bp-inventory').value);
+      
+      const parent = document.getElementById('bp-parent').value;
+      if (parent) formData.append('ParentBoxCode', parent);
+      
+      const picture = document.getElementById('bp-picture').files[0];
+      if (picture) formData.append('picture', picture);
+      
+      await apiCall(`${API_BASE}/boxpart`, {
+        method: 'POST',
+        body: formData
+      });
+    }
+    
+    async function getAllBoxParts() {
+      await apiCall(`${API_BASE}/boxpart`);
+    }
+    
+    async function searchBoxPart() {
+      const query = document.getElementById('bp-search').value;
+      await apiCall(`${API_BASE}/boxpart/search?q=${encodeURIComponent(query)}`);
+    }
+    
+    async function getBoxPartByCode() {
+      const code = document.getElementById('bp-getcode').value;
+      await apiCall(`${API_BASE}/boxpart/code/${encodeURIComponent(code)}`);
+    }
+    
+    async function getBoxPartPicture() {
+      const code = document.getElementById('bp-getcode').value;
+      const url = `${API_BASE}/boxpart/picture/${encodeURIComponent(code)}`;
+      
+      const display = document.getElementById('result-display');
+      display.innerHTML = `
+        <div class="success">✅ Picture loaded!</div>
+        <img src="${url}" class="preview" crossorigin="use-credentials" onerror="this.parentElement.innerHTML='<div class=error>❌ Failed to load picture</div>'">
+      `;
+    }
+    
+    async function updateBoxPart() {
+      const code = document.getElementById('bp-update-code').value;
+      const formData = new FormData();
+      
+      const description = document.getElementById('bp-update-description').value;
+      if (description) formData.append('description', description);
+      
+      const demand = document.getElementById('bp-update-demand').value;
+      if (demand) formData.append('regularDemand', demand);
+      
+      const picture = document.getElementById('bp-update-picture').files[0];
+      if (picture) formData.append('picture', picture);
+      
+      await apiCall(`${API_BASE}/boxpart/${encodeURIComponent(code)}`, {
+        method: 'PUT',
+        body: formData
+      });
+    }
+    
+    async function deleteBoxPart() {
+      const code = document.getElementById('bp-delete-code').value;
+      if (!confirm(`Are you sure you want to delete BoxPart ${code}? This will also delete the picture.`)) return;
+      
+      await apiCall(`${API_BASE}/boxpart/${encodeURIComponent(code)}`, {
+        method: 'DELETE'
+      });
+    }
+    
+    // BoxMovement Functions
+    async function createBoxMovement() {
+      try {
+        const id = document.getElementById('bm-id').value;
+        const parentCode = document.getElementById('bm-parent').value;
+        const movementType = document.getElementById('bm-type').value;
+        const partsJson = document.getElementById('bm-parts').value;
+        
+        const BoxPartsDemanded = JSON.parse(partsJson);
+        
+        await apiCall(`${API_BASE}/boxmovement`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id,
+            ParentBoxCode: parentCode,
+            movementType,
+            BoxPartsDemanded
+          })
+        });
+      } catch (e) {
+        showResult({ error: 'Invalid JSON format for BoxPartsDemanded' }, false);
+      }
+    }
+    
+    async function getAllBoxMovements() {
+      await apiCall(`${API_BASE}/boxmovement`);
+    }
+    
+    async function searchBoxMovement() {
+      const query = document.getElementById('bm-search').value;
+      await apiCall(`${API_BASE}/boxmovement/search?q=${encodeURIComponent(query)}`);
+    }
+    
+    async function getBoxMovementById() {
+      const id = document.getElementById('bm-getid').value;
+      await apiCall(`${API_BASE}/boxmovement/${encodeURIComponent(id)}`);
+    }
+    
+    async function getBoxMovementByParent() {
+      const code = document.getElementById('bm-getparent').value;
+      await apiCall(`${API_BASE}/boxmovement/parentbox/${encodeURIComponent(code)}`);
+    }
+    
+    async function updateBoxMovement() {
+      try {
+        const id = document.getElementById('bm-update-id').value;
+        const movementType = document.getElementById('bm-update-type').value;
+        const partsJson = document.getElementById('bm-update-parts').value;
+        
+        const body = {};
+        if (movementType) body.movementType = movementType;
+        if (partsJson) body.BoxPartsDemanded = JSON.parse(partsJson);
+        
+        await apiCall(`${API_BASE}/boxmovement/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      } catch (e) {
+        showResult({ error: 'Invalid JSON format for BoxPartsDemanded' }, false);
+      }
+    }
+    
+    async function deleteBoxMovement() {
+      const id = document.getElementById('bm-delete-id').value;
+      if (!confirm(`Are you sure you want to delete BoxMovement ${id}? This will reverse inventory changes.`)) return;
+      
+      await apiCall(`${API_BASE}/boxmovement/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    }
+  </script>
+</body>
+</html>

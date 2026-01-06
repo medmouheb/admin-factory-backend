@@ -37,6 +37,9 @@ db.packets = require("./packet.model.js")(sequelize, Sequelize);
 db.pieces = require("./piece.model.js")(sequelize, Sequelize);
 db.history = require("../models/history.model.js")(sequelize, Sequelize);
 db.log = require("../models/log.model.js")(sequelize, Sequelize);
+db.parentBox = require("../models/parentBox.model.js")(sequelize, Sequelize);
+db.boxPart = require("../models/boxPart.model.js")(sequelize, Sequelize);
+db.boxMovement = require("../models/boxMovement.model.js")(sequelize, Sequelize);
 
 
 
@@ -63,6 +66,19 @@ db.log.belongsTo(db.user, {
   foreignKey: "matricule",
   targetKey: "matricule",
   as: "user"
+});
+
+// Box Management Associations
+db.parentBox.hasMany(db.boxPart, {
+  foreignKey: "ParentBoxCode",
+  sourceKey: "ParentBoxCode",
+  as: "boxParts"
+});
+
+db.boxPart.belongsTo(db.parentBox, {
+  foreignKey: "ParentBoxCode",
+  targetKey: "ParentBoxCode",
+  as: "parentBox"
 });
 
 db.ROLES = ["operateur", "superviseur", "admin"];
