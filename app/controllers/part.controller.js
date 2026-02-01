@@ -198,57 +198,84 @@ exports.importFromExcel = async (req, res) => {
     await workbook.xlsx.load(req.file.buffer);
 
     const worksheet = workbook.getWorksheet(1);
-    const parts = [];
-    const errors = [];
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    const rowData = [];
+    let colMap = {};
 
     worksheet.eachRow((row, rowNumber) => {
-      // Skip header row
-      if (rowNumber === 1) return;
+      // Handle header row
+      if (rowNumber === 1) {
+        row.values.forEach((value, index) => {
+          if (typeof value === 'string') {
+            const header = value.trim().toLowerCase();
+            if (header.includes('lear') && header.includes('pn')) colMap.learPN = index;
+            if (header.includes('tesca') && header.includes('pn')) colMap.tescaPN = index;
+            if (header === 'description' || header === 'desc') colMap.desc = index;
+            if (header.includes('qty') || header.includes('quantity')) colMap.qtyPerBox = index;
+          }
+        });
+        return;
+      }
+      rowData.push({ rowNumber, values: row.values });
+    });
 
+    // Validate if required columns were found
+    if (!colMap.learPN || !colMap.tescaPN || !colMap.desc || !colMap.qtyPerBox) {
+        return res.status(400).send({ 
+          message: "Invalid file format. Missing required columns: Lear PN, Tesca PN, Description, or Qty Per Box." 
+        });
+    }
+
+    for (const { rowNumber, values } of rowData) {
       try {
-        const learPN = row.values[2]; // Column B
-        const tescaPN = row.values[3]; // Column C
-        const desc = row.values[4]; // Column D
-        const qtyPerBox = row.values[5]; // Column E
+        const learPN = values[colMap.learPN];
+        const tescaPN = values[colMap.tescaPN];
+        const desc = values[colMap.desc];
+        const qtyPerBoxRaw = values[colMap.qtyPerBox];
 
-        if (!learPN || !tescaPN || !desc || qtyPerBox === undefined) {
-          errors.push(`Row ${rowNumber}: Missing required fields`);
-          return;
+        if (!learPN || !tescaPN || !desc || qtyPerBoxRaw === undefined) {
+          throw new Error("Missing required fields (Lear PN, Tesca PN, Description, or Qty Per Box)");
         }
 
-        parts.push({
+        const qtyPerBox = parseInt(qtyPerBoxRaw);
+        if (isNaN(qtyPerBox)) {
+          throw new Error(`Invalid Qty Per Box value: "${qtyPerBoxRaw}"`);
+        }
+
+        await Part.create({
           learPN,
           tescaPN,
           desc,
-          qtyPerBox: parseInt(qtyPerBox)
+          qtyPerBox: qtyPerBox
         });
-      } catch (err) {
-        errors.push(`Row ${rowNumber}: ${err.message}`);
-      }
-    });
 
-    if (parts.length === 0) {
-      return res.status(400).send({ 
-        message: "No valid parts found in the file",
-        errors 
+        results.success++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push(`Row ${rowNumber}: ${err.message}`);
+      }
+    }
+
+    if (results.success === 0 && results.errors.length > 0) {
+      return res.status(400).send({
+        message: "Failed to import parts. No valid rows were added.",
+        results
       });
     }
 
-    // Bulk create parts
-    const created = await Part.bulkCreate(parts, {
-      validate: true,
-      ignoreDuplicates: false
-    });
-
     res.status(201).send({
-      message: `Successfully imported ${created.length} parts`,
-      imported: created.length,
-      errors: errors.length > 0 ? errors : undefined
+      message: `Import complete. Added ${results.success} parts.`,
+      results
     });
 
-    await logAction(req.userId, "Part", "IMPORT", null, { count: created.length });
+    await logAction(req.userId, "Part", "IMPORT", null, { success: results.success, failed: results.failed });
   } catch (err) {
     console.error("Import error:", err);
-    res.status(500).send({ message: err.message });
+    res.status(500).send({ message: "An unexpected error occurred during import: " + err.message });
   }
 };

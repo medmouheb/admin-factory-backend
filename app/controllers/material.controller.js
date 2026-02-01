@@ -207,57 +207,86 @@ exports.importFromExcel = async (req, res) => {
     await workbook.xlsx.load(req.file.buffer);
 
     const worksheet = workbook.getWorksheet(1);
-    const materials = [];
-    const errors = [];
+
+
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    const rowData = [];
+    let colMap = {};
 
     worksheet.eachRow((row, rowNumber) => {
-      // Skip header row
-      if (rowNumber === 1) return;
+      // Handle header row
+      if (rowNumber === 1) {
+        row.values.forEach((value, index) => {
+          if (typeof value === 'string') {
+            const header = value.trim().toLowerCase();
+            if (header === 'material') colMap.material = index;
+            if (header === 'material description' || header === 'description') colMap.materialDescription = index;
+            if (header === 'storage unit') colMap.storageUn = index;
+            if (header === 'available stock' || header === 'stock') colMap.availStock = index;
+          }
+        });
+        return;
+      }
+      rowData.push({ rowNumber, values: row.values });
+    });
 
+    // Validate if required columns were found
+    if (!colMap.material || !colMap.materialDescription || !colMap.availStock) {
+        return res.status(400).send({ 
+          message: "Invalid file format. Missing required columns: Material, Material Description, or Available Stock." 
+        });
+    }
+
+    for (const { rowNumber, values } of rowData) {
       try {
-        const material = row.values[2]; // Column B
-        const materialDescription = row.values[3]; // Column C
-        const storageUn = row.values[4]; // Column D
-        const availStock = row.values[5]; // Column E
+        const material = values[colMap.material]; 
+        const materialDescription = values[colMap.materialDescription];
+        const storageUn = colMap.storageUn ? values[colMap.storageUn] : null;
+        const availStockRaw = values[colMap.availStock];
 
-        if (!material || !materialDescription || availStock === undefined) {
-          errors.push(`Row ${rowNumber}: Missing required fields`);
-          return;
+        if (!material || !materialDescription || availStockRaw === undefined) {
+          throw new Error("Missing required fields (Material, Description, or Available Stock)");
         }
 
-        materials.push({
+        const availStock = parseFloat(availStockRaw);
+        if (isNaN(availStock)) {
+          throw new Error(`Invalid stock value: "${availStockRaw}"`);
+        }
+
+        await Material.create({
           material,
           materialDescription,
           storageUn: storageUn || null,
-          availStock: parseFloat(availStock)
+          availStock: availStock
         });
-      } catch (err) {
-        errors.push(`Row ${rowNumber}: ${err.message}`);
-      }
-    });
 
-    if (materials.length === 0) {
-      return res.status(400).send({ 
-        message: "No valid materials found in the file",
-        errors 
+        results.success++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push(`Row ${rowNumber}: ${err.message}`);
+      }
+    }
+
+    if (results.success === 0 && results.errors.length > 0) {
+      return res.status(400).send({
+        message: "Failed to import materials. No valid rows were added.",
+        results
       });
     }
 
-    // Bulk create materials
-    const created = await Material.bulkCreate(materials, {
-      validate: true,
-      ignoreDuplicates: false
+    res.status(201).send({
+      message: `Import complete. Added ${results.success} materials.`,
+      results
     });
 
-    res.status(201).send({
-      message: `Successfully imported ${created.length} materials`,
-      imported: created.length,
-      errors: errors.length > 0 ? errors : undefined
-    });
-    
-    await logAction(req.userId, "Material", "IMPORT", null, { count: created.length });
+    await logAction(req.userId, "Material", "IMPORT", null, { success: results.success, failed: results.failed });
   } catch (err) {
     console.error("Import error:", err);
-    res.status(500).send({ message: err.message });
+    res.status(500).send({ message: "An unexpected error occurred during import: " + err.message });
   }
 };
