@@ -260,3 +260,43 @@ exports.session = async (req, res) => {
     }
   });
 };
+
+/**
+ * 🚪 Sign Out
+ */
+exports.signout = async (req, res) => {
+  try {
+    const cookieHeader = req.headers["cookie"];
+    let refreshToken = null;
+
+    if (cookieHeader) {
+      const cookies = Object.fromEntries(cookieHeader.split(";").map((c) => {
+        const i = c.indexOf("=");
+        const k = c.slice(0, i).trim();
+        const v = decodeURIComponent(c.slice(i + 1).trim());
+        return [k, v];
+      }));
+      if (cookies.refreshToken) {
+        refreshToken = cookies.refreshToken;
+      }
+    }
+
+    if (refreshToken) {
+      refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+    }
+
+    const cookieOptions = {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      path: "/",
+    };
+
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+
+    return res.status(200).send({ message: "You've been signed out!" });
+  } catch (err) {
+    return res.status(500).send({ message: err.message });
+  }
+};
