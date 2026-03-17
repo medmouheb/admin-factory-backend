@@ -5,15 +5,18 @@ This document describes the new Excel export and import APIs that have been adde
 ## 1. Material APIs
 
 ### Export Materials to Excel
+
 **Endpoint:** `GET /api/materials/export`
 
 **Query Parameters:**
+
 - `startDate` (required): Start date in format YYYY-MM-DD (e.g., "2025-01-01")
 - `endDate` (required): End date in format YYYY-MM-DD (e.g., "2025-12-31")
 
 **Description:** Exports all materials created between the start and end dates to an Excel file.
 
 **Example:**
+
 ```
 GET http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31
 ```
@@ -21,6 +24,7 @@ GET http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025
 **Response:** Downloads an Excel file named `materials_YYYY-MM-DD_to_YYYY-MM-DD.xlsx`
 
 **Excel Columns:**
+
 - ID
 - Material
 - Material Description
@@ -32,14 +36,17 @@ GET http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025
 ---
 
 ### Import Materials from Excel
+
 **Endpoint:** `POST /api/materials/import`
 
 **Content-Type:** `multipart/form-data`
 
 **Body:**
+
 - `file`: Excel file (.xlsx)
 
 **Description:** Imports materials from an uploaded Excel file. The Excel file should have the following columns (starting from column B):
+
 - Column A: ID (optional, will be auto-generated)
 - Column B: Material (required)
 - Column C: Material Description (required)
@@ -47,12 +54,14 @@ GET http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025
 - Column E: Available Stock (required)
 
 **Example using cURL:**
+
 ```bash
 curl -X POST http://localhost:8080/api/materials/import \
   -F "file=@materials.xlsx"
 ```
 
 **Example using Postman:**
+
 1. Select POST method
 2. Enter URL: `http://localhost:8080/api/materials/import`
 3. Go to Body tab
@@ -61,6 +70,7 @@ curl -X POST http://localhost:8080/api/materials/import \
 6. Choose your Excel file
 
 **Response:**
+
 ```json
 {
   "message": "Successfully imported 10 materials",
@@ -74,15 +84,18 @@ curl -X POST http://localhost:8080/api/materials/import \
 ## 2. Combined Ticket and TicketCode Export API
 
 ### Export Combined Ticket and TicketCode Data
+
 **Endpoint:** `GET /api/tickets-combined/export`
 
 **Query Parameters:**
+
 - `startDate` (required): Start date in format YYYY-MM-DD (e.g., "2025-01-01")
 - `endDate` (required): End date in format YYYY-MM-DD (e.g., "2025-12-31")
 
 **Description:** Exports all tickets created between the start and end dates, combined with their corresponding ticket code data. The join is performed where `ticket.ticketCode = ticketCode.code`.
 
 **Example:**
+
 ```
 GET http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31
 ```
@@ -90,6 +103,7 @@ GET http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDa
 **Response:** Downloads an Excel file named `tickets_combined_YYYY-MM-DD_to_YYYY-MM-DD.xlsx`
 
 **Excel Columns:**
+
 - Ticket ID
 - Barcode
 - Ticket Code
@@ -111,12 +125,13 @@ When preparing an Excel file for import, follow this structure:
 
 ### Materials Import Template
 
-| ID | Material | Material Description | Storage Unit | Available Stock |
-|----|----------|---------------------|--------------|-----------------|
-| (auto) | MAT001 | Sample Material 1 | SU001 | 100.000 |
-| (auto) | MAT002 | Sample Material 2 | SU002 | 250.500 |
+| ID     | Material | Material Description | Storage Unit | Available Stock |
+| ------ | -------- | -------------------- | ------------ | --------------- |
+| (auto) | MAT001   | Sample Material 1    | SU001        | 100.000         |
+| (auto) | MAT002   | Sample Material 2    | SU002        | 250.500         |
 
 **Notes:**
+
 - Row 1 should contain headers
 - ID column (A) is optional and will be auto-generated
 - Material (B) and Material Description (C) are required
@@ -130,18 +145,21 @@ When preparing an Excel file for import, follow this structure:
 ### Using cURL
 
 **Export Materials:**
+
 ```bash
 curl -X GET "http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" \
   --output materials.xlsx
 ```
 
 **Import Materials:**
+
 ```bash
 curl -X POST http://localhost:8080/api/materials/import \
   -F "file=@materials.xlsx"
 ```
 
 **Export Combined Tickets:**
+
 ```bash
 curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" \
   --output tickets_combined.xlsx
@@ -150,15 +168,18 @@ curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01
 ### Using JavaScript/Fetch
 
 **Export Materials:**
-```javascript
-const startDate = '2025-01-01';
-const endDate = '2025-12-31';
 
-fetch(`http://localhost:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`)
-  .then(response => response.blob())
-  .then(blob => {
+```javascript
+const startDate = "2025-01-01";
+const endDate = "2025-12-31";
+
+fetch(
+  `http://localhost:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`,
+)
+  .then((response) => response.blob())
+  .then((blob) => {
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `materials_${startDate}_to_${endDate}.xlsx`;
     a.click();
@@ -166,29 +187,33 @@ fetch(`http://localhost:8080/api/materials/export?startDate=${startDate}&endDate
 ```
 
 **Import Materials:**
-```javascript
-const fileInput = document.getElementById('fileInput');
-const formData = new FormData();
-formData.append('file', fileInput.files[0]);
 
-fetch('http://localhost:8080/api/materials/import', {
-  method: 'POST',
-  body: formData
+```javascript
+const fileInput = document.getElementById("fileInput");
+const formData = new FormData();
+formData.append("file", fileInput.files[0]);
+
+fetch("http://localhost:8080/api/materials/import", {
+  method: "POST",
+  body: formData,
 })
-  .then(response => response.json())
-  .then(data => console.log(data));
+  .then((response) => response.json())
+  .then((data) => console.log(data));
 ```
 
 **Export Combined Tickets:**
-```javascript
-const startDate = '2025-01-01';
-const endDate = '2025-12-31';
 
-fetch(`http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`)
-  .then(response => response.blob())
-  .then(blob => {
+```javascript
+const startDate = "2025-01-01";
+const endDate = "2025-12-31";
+
+fetch(
+  `http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`,
+)
+  .then((response) => response.blob())
+  .then((blob) => {
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `tickets_combined_${startDate}_to_${endDate}.xlsx`;
     a.click();
@@ -200,6 +225,7 @@ fetch(`http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&
 ## Dependencies
 
 The following npm packages were installed to support these features:
+
 - `exceljs`: For creating and reading Excel files
 - `multer`: For handling file uploads
 

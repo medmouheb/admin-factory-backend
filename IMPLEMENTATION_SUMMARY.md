@@ -5,12 +5,14 @@
 ### 1. Material Model - Export & Import APIs
 
 #### Export API
+
 - **Endpoint:** `GET /api/materials/export`
 - **Parameters:** `startDate`, `endDate` (query parameters)
 - **Functionality:** Exports materials created between the specified dates to an Excel file
 - **File:** `app/controllers/material.controller.js` (exportToExcel function)
 
 #### Import API
+
 - **Endpoint:** `POST /api/materials/import`
 - **Parameters:** `file` (multipart/form-data)
 - **Functionality:** Imports materials from an uploaded Excel file
@@ -19,6 +21,7 @@
 ### 2. Combined Ticket & TicketCode - Export API
 
 #### Export API
+
 - **Endpoint:** `GET /api/tickets-combined/export`
 - **Parameters:** `startDate`, `endDate` (query parameters)
 - **Functionality:** Exports tickets with their associated ticket codes (joined on `ticket.ticketCode = ticketCode.code`)
@@ -27,6 +30,7 @@
 ## 📁 Files Created/Modified
 
 ### New Files Created:
+
 1. `app/controllers/ticketCombined.controller.js` - Controller for combined ticket export
 2. `app/routes/ticketCombined.routes.js` - Routes for combined ticket export
 3. `EXCEL_API_DOCUMENTATION.md` - Detailed API documentation
@@ -36,6 +40,7 @@
 7. `material_import_template.xlsx` - Sample Excel template for imports
 
 ### Modified Files:
+
 1. `app/controllers/material.controller.js` - Added export and import functions
 2. `app/routes/material.routes.js` - Added export and import routes with multer middleware
 3. `server.js` - Registered ticketCombined routes
@@ -44,6 +49,7 @@
 ## 🔧 Technical Details
 
 ### Dependencies Installed:
+
 ```json
 {
   "exceljs": "^4.x.x",
@@ -53,15 +59,16 @@
 
 ### API Endpoints Summary:
 
-| Endpoint | Method | Purpose | Date Filter |
-|----------|--------|---------|-------------|
-| `/api/materials/export` | GET | Export materials | ✅ |
-| `/api/materials/import` | POST | Import materials | ❌ |
-| `/api/tickets-combined/export` | GET | Export combined data | ✅ |
+| Endpoint                       | Method | Purpose              | Date Filter |
+| ------------------------------ | ------ | -------------------- | ----------- |
+| `/api/materials/export`        | GET    | Export materials     | ✅          |
+| `/api/materials/import`        | POST   | Import materials     | ❌          |
+| `/api/tickets-combined/export` | GET    | Export combined data | ✅          |
 
 ### Excel File Structures:
 
 #### Materials Export/Import:
+
 - ID
 - Material
 - Material Description
@@ -71,6 +78,7 @@
 - Updated At (export only)
 
 #### Combined Tickets Export:
+
 - Ticket ID
 - Barcode
 - Ticket Code
@@ -87,6 +95,7 @@
 ## 🎯 Key Features Implemented
 
 ### Material Export:
+
 ✅ Date range filtering (startDate to endDate)
 ✅ Filters by `createdAt` field
 ✅ Styled Excel headers (bold, gray background)
@@ -94,6 +103,7 @@
 ✅ Proper error handling
 
 ### Material Import:
+
 ✅ File upload via multipart/form-data
 ✅ Validation of required fields
 ✅ Row-by-row error reporting
@@ -102,6 +112,7 @@
 ✅ Continues processing even if some rows fail
 
 ### Combined Ticket Export:
+
 ✅ Joins Ticket and TicketCode tables
 ✅ Date range filtering on Ticket.createdAt
 ✅ Handles missing ticket codes gracefully
@@ -111,9 +122,11 @@
 ## 🧪 Testing Resources
 
 ### Test Page:
+
 Open `test-excel-apis.html` in a browser to access an interactive testing interface.
 
 ### Sample Template:
+
 Use `material_import_template.xlsx` as a starting point for imports.
 
 ### cURL Examples:
@@ -132,6 +145,7 @@ curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01
 ## 📊 Data Flow
 
 ### Export Flow:
+
 1. Client sends GET request with date range
 2. Server queries database with date filter
 3. Server creates Excel workbook using ExcelJS
@@ -139,6 +153,7 @@ curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01
 5. Client downloads file
 
 ### Import Flow:
+
 1. Client uploads Excel file via POST
 2. Multer middleware processes file upload
 3. Server parses Excel using ExcelJS
@@ -147,6 +162,7 @@ curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01
 6. Server returns success/error report
 
 ### Combined Export Flow:
+
 1. Client sends GET request with date range
 2. Server queries Ticket table with date filter
 3. Server queries all TicketCode records
@@ -165,6 +181,7 @@ curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01
 ## 🚀 Next Steps (Optional Enhancements)
 
 Potential future improvements:
+
 - [ ] Add authentication/authorization to export/import endpoints
 - [ ] Add file size limits for uploads
 - [ ] Add progress tracking for large imports

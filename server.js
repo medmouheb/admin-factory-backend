@@ -1,14 +1,30 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 
 var corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173", // configuration dynamique
+  origin: function (origin, callback) {
+    console.log("Incoming request origin:", origin);
+    const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(',');
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("Origin not allowed:", origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -21,15 +37,11 @@ const db = require("./app/models");
 const Role = db.role;
 
 db.sequelize.sync({ alter: true });
-// force: true will drop the table if it already exists
-// db.sequelize.sync({force: true}).then(() => {
-//   console.log('Drop and Resync Database with { force: true }');
-//   initial();
-// });
 
 // simple route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to bezkoder application." });
+  res.header('acc')
 });
 
 // routes

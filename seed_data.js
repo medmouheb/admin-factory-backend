@@ -66,8 +66,22 @@ async function seed() {
             console.log(`+ Part ${p.learPN} created.`);
         }
     }
+    
+    // --- 5. Ticket Codes ---
+    console.log("\n--- Seeding Ticket Codes ---");
+    const ticketCodes = [
+        { code: "TCK-001", matricule: "OP001", learPN: "LEAR-1001", quantity: 20, hu: "HU-101" },
+        { code: "TCK-002", matricule: "OP001", learPN: "LEAR-1002", quantity: 20, hu: "HU-102" }
+    ];
+    for (const tc of ticketCodes) {
+         const exists = await db.ticketCode.findOne({where: {code: tc.code, hu: tc.hu}});
+         if(!exists) {
+             await db.ticketCode.create(tc);
+             console.log(`+ TicketCode ${tc.code} created.`);
+         }
+    }
 
-    // --- 5. Tickets ---
+    // --- 6. Tickets ---
     console.log("\n--- Seeding Tickets ---");
     const tickets = [
         { ticketCode: "TCK-001", barcode: "BAR-TCK-001" },
@@ -78,21 +92,6 @@ async function seed() {
             await db.ticket.create(t);
             console.log(`+ Ticket ${t.barcode} created.`);
         }
-    }
-
-    // --- 6. Ticket Codes ---
-    console.log("\n--- Seeding Ticket Codes ---");
-    const ticketCodes = [
-        { code: "CODE-1", matricule: "OP001", learPN: "LEAR-1001", quantity: 20, hu: "HU-101" },
-        { code: "CODE-2", matricule: "OP001", learPN: "LEAR-1002", quantity: 20, hu: "HU-102" }
-    ];
-    for (const tc of ticketCodes) {
-         // Assuming 'code' is not unique in model def, but we check to avoid duplicates for seeding
-         const exists = await db.ticketCode.findOne({where: {code: tc.code, hu: tc.hu}});
-         if(!exists) {
-             await db.ticketCode.create(tc);
-             console.log(`+ TicketCode ${tc.code} created.`);
-         }
     }
 
     // --- 7. Packets & Pieces ---

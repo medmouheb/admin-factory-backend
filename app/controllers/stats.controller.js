@@ -108,38 +108,82 @@ exports.getTicketCodesStatsByMatricule = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    const [
-      partsCount,
-      materialsCount,
-      usersCount,
-      ticketsCount,
-      ticketCodesCount
-    ] = await Promise.all([
-      Part.count(),
-      Material.count(),
-      User.count(),
-      Ticket.count(),
-      TicketCode.count()
+    const getStats = async (model) => {
+      if (!model) return { total: 0, growth: 0 };
+      
+      const safeCount = async (where = {}) => {
+         try {
+            const result = await model.findAll({
+               where,
+               attributes: [
+                  [sequelize.fn('COUNT', sequelize.col('id')), 'total']
+               ],
+               raw: true
+            });
+            // Result is [{ total: 5 }]
+            return (result && result.length > 0) ? (parseInt(result[0].total, 10) || 0) : 0;
+         } catch (error) {
+            console.error("Count error:", error);
+            return 0;
+         }
+      };
+
+      const total = await safeCount();
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const createdThisMonth = await safeCount({
+          createdAt: {
+            [db.Sequelize.Op.gte]: startOfMonth
+          }
+      });
+
+      const totalStartOfMonth = total - createdThisMonth;
+      let growth = 0;
+      if (totalStartOfMonth > 0) {
+        growth = (createdThisMonth / totalStartOfMonth) * 100;
+      } else if (createdThisMonth > 0) {
+        growth = 100;
+      }
+      
+      return { total, growth: parseFloat(growth.toFixed(1)) };
+    };
+
+    const Ticket = db.ticket;
+    const Piece = db.pieces; // Assuming 'pieces' is the model name in db object
+    const User = db.user;
+    const Material = db.material;
+    
+    // Parallel fetch
+    const [ticketsStats, piecesStats, usersStats, materialsStats] = await Promise.all([
+      getStats(Ticket),
+      getStats(Piece),
+      getStats(User),
+      getStats(Material)
     ]);
 
+    // Active Users (simplified as Total Users for now, or filter by 'isActive' if field exists)
+    // The previous implementation used User.count().
+    
     // Get recent activity (last 5 tickets)
     const recentTickets = await Ticket.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
-      include: [] // Add relations if needed
+      include: [] 
     });
 
     res.status(200).send({
       counts: {
-        parts: partsCount,
-        materials: materialsCount,
-        users: usersCount,
-        tickets: ticketsCount,
-        ticketCodes: ticketCodesCount
+        tickets: ticketsStats,
+        pieces: piecesStats,
+        users: usersStats,
+        materials: materialsStats
       },
       recentActivity: recentTickets
     });
   } catch (error) {
+    console.error("Dashboard stats error:", error);
     res.status(500).send({ message: error.message });
   }
 };

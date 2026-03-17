@@ -13,6 +13,7 @@ module.exports = app => {
   router.put("/:id", [authJwt.verifyToken], parts.update);
   router.delete("/:id", [authJwt.verifyToken], parts.delete);
   router.get("/lear", [authJwt.verifyToken], parts.getByLearPN);
+  router.get("/serbia", [authJwt.verifyToken], parts.getBySerbiaPN);
   
   // Export to Excel (with date range)
   router.get("/export", [authJwt.verifyToken], parts.exportToExcel);

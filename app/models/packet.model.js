@@ -3,7 +3,7 @@ module.exports = (sequelize, Sequelize) => {
         packetId: {
             type: Sequelize.STRING,
             allowNull: false,
-            unique: true
+            unique: false
         },
         huGalia: {
             type: Sequelize.STRING,

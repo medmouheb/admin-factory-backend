@@ -13,17 +13,20 @@ Three new Excel-based APIs have been added to the application:
 ### Prerequisites
 
 The following packages have been installed:
+
 - `exceljs` - For Excel file generation and parsing
 - `multer` - For file upload handling
 
 ### API Endpoints
 
 #### 1. Export Materials
+
 ```
 GET /api/materials/export?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 ```
 
 #### 2. Import Materials
+
 ```
 POST /api/materials/import
 Content-Type: multipart/form-data
@@ -31,6 +34,7 @@ Body: file (Excel file)
 ```
 
 #### 3. Export Combined Tickets
+
 ```
 GET /api/tickets-combined/export?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 ```
@@ -46,16 +50,19 @@ GET /api/tickets-combined/export?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 ### Option 2: Use cURL
 
 **Export Materials:**
+
 ```bash
 curl -X GET "http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
 ```
 
 **Import Materials:**
+
 ```bash
 curl -X POST http://localhost:8080/api/materials/import -F "file=@material_import_template.xlsx"
 ```
 
 **Export Combined Tickets:**
+
 ```bash
 curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
 ```
@@ -81,6 +88,7 @@ curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01
 A template file has been created: `material_import_template.xlsx`
 
 **Required Columns:**
+
 - **Column A (ID):** Auto-generated, can be left as "(auto)"
 - **Column B (Material):** Material code - **REQUIRED**
 - **Column C (Material Description):** Description - **REQUIRED**
@@ -89,10 +97,10 @@ A template file has been created: `material_import_template.xlsx`
 
 **Example:**
 
-| ID | Material | Material Description | Storage Unit | Available Stock |
-|----|----------|---------------------|--------------|-----------------|
-| (auto) | MAT001 | Sample Material 1 | SU001 | 100.000 |
-| (auto) | MAT002 | Sample Material 2 | SU002 | 250.500 |
+| ID     | Material | Material Description | Storage Unit | Available Stock |
+| ------ | -------- | -------------------- | ------------ | --------------- |
+| (auto) | MAT001   | Sample Material 1    | SU001        | 100.000         |
+| (auto) | MAT002   | Sample Material 2    | SU002        | 250.500         |
 
 ## 🔧 Implementation Details
 
@@ -121,18 +129,21 @@ A template file has been created: `material_import_template.xlsx`
 ## 🎯 Features
 
 ### Material Export
+
 - ✅ Filter by date range (createdAt field)
 - ✅ Includes all material fields
 - ✅ Styled Excel output with headers
 - ✅ Automatic filename with date range
 
 ### Material Import
+
 - ✅ Bulk import from Excel
 - ✅ Validation of required fields
 - ✅ Error reporting for invalid rows
 - ✅ Continues processing valid rows even if some fail
 
 ### Combined Ticket Export
+
 - ✅ Joins Ticket and TicketCode data
 - ✅ Filter by date range
 - ✅ Includes all fields from both tables
@@ -141,14 +152,17 @@ A template file has been created: `material_import_template.xlsx`
 ## 🔍 Data Relationships
 
 The Combined Ticket Export joins data as follows:
+
 ```
 Ticket.ticketCode = TicketCode.code
 ```
 
 **Ticket fields:**
+
 - id, barcode, ticketCode, createdAt, updatedAt
 
 **TicketCode fields:**
+
 - id, code, matricule, learPN, quantity, hu, createdAt, updatedAt
 
 ## ⚠️ Error Handling
@@ -168,11 +182,11 @@ Error responses include a descriptive `message` field.
 // Export Materials
 async function exportMaterials(startDate, endDate) {
   const response = await fetch(
-    `http://localhost:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`
+    `http://localhost:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`,
   );
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `materials_${startDate}_to_${endDate}.xlsx`;
   a.click();
@@ -181,24 +195,24 @@ async function exportMaterials(startDate, endDate) {
 // Import Materials
 async function importMaterials(file) {
   const formData = new FormData();
-  formData.append('file', file);
-  
-  const response = await fetch('http://localhost:8080/api/materials/import', {
-    method: 'POST',
-    body: formData
+  formData.append("file", file);
+
+  const response = await fetch("http://localhost:8080/api/materials/import", {
+    method: "POST",
+    body: formData,
   });
-  
+
   return await response.json();
 }
 
 // Export Combined Tickets
 async function exportCombinedTickets(startDate, endDate) {
   const response = await fetch(
-    `http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`
+    `http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`,
   );
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `tickets_combined_${startDate}_to_${endDate}.xlsx`;
   a.click();
@@ -226,6 +240,7 @@ For detailed API documentation, see `EXCEL_API_DOCUMENTATION.md`
 ## 🎉 Summary
 
 You now have three powerful Excel-based APIs:
+
 1. **Export materials** filtered by date
 2. **Import materials** from Excel files
 3. **Export combined ticket data** with ticket codes

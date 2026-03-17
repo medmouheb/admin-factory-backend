@@ -65,6 +65,9 @@ db.log.belongsTo(db.user, {
   as: "user"
 });
 
+db.ticketCode.hasMany(db.ticket, { foreignKey: "ticketCode", sourceKey: "code", as: "tickets" });
+db.ticket.belongsTo(db.ticketCode, { foreignKey: "ticketCode", targetKey: "code", as: "ticketCodeData" });
+
 db.ROLES = ["operateur", "superviseur", "admin"];
 db.AccessTos = ["scan", "upload", "clients"];
 

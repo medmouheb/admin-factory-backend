@@ -152,12 +152,65 @@ exports.findAll = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
+    // Post-processing to remove duplicate HUs (keeping the one with tickets)
+    let finalData = data;
+    if (data.length > 0) {
+      // 1. Get all codes
+      const codes = data.map(d => d.code);
+      
+      // 2. Count tickets for these codes
+      const Ticket = db.ticket;
+      const ticketCounts = await Ticket.findAll({
+        attributes: ['ticketCode', [db.Sequelize.fn('COUNT', db.Sequelize.col('id')), 'cnt']],
+        where: { ticketCode: codes },
+        group: ['ticketCode']
+      });
+      
+      const countMap = {};
+      ticketCounts.forEach(t => {
+        countMap[t.ticketCode] = parseInt(t.dataValues.cnt || 0);
+      });
+      
+      // 3. Group by HU and pick best
+      const groups = {};
+      data.forEach(item => {
+         // Use HU as key, or fallback to unique ID if HU is missing
+         const key = item.hu || `__NO_HU_${item.id}`;
+         if (!groups[key]) groups[key] = [];
+         groups[key].push(item);
+      });
+      
+      finalData = [];
+      Object.keys(groups).forEach(key => {
+        const items = groups[key];
+        if (items.length === 1) {
+          finalData.push(items[0]);
+        } else {
+          // Sort by ticket count DESC
+          items.sort((a, b) => {
+            const cA = countMap[a.code] || 0;
+            const cB = countMap[b.code] || 0;
+            return cB - cA;
+          });
+          // Pick the first one (most tickets)
+          finalData.push(items[0]);
+        }
+      });
+      
+      // Restore sort order
+      finalData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    // Calculate adjusted total items
+    const duplicatesRemoved = data.length - finalData.length;
+    const adjustedTotalItems = totalItems - duplicatesRemoved;
+
     res.json({
       page,
       limit,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      data,
+      totalItems: adjustedTotalItems,
+      totalPages: Math.ceil(adjustedTotalItems / limit),
+      data: finalData,
     });
   } catch (error) {
     console.error("Error fetching TicketCodes:", error);

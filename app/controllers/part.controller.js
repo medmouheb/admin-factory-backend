@@ -80,6 +80,7 @@ exports.search = async (req, res) => {
       where: {
         [Op.or]: [
           { learPN: { [Op.like]: `%${q}%` } },
+          { sarbiaPN: { [Op.like]: `%${q}%` } },
           { tescaPN: { [Op.like] : `%${q}%` } },
           { desc: { [Op.like] : `%${q}%` } }
         ]
@@ -107,6 +108,16 @@ exports.search = async (req, res) => {
 exports.getByLearPN = async (req, res) => {
   try {
     const part = await Part.findOne({ where: { learPN: req.query.learPN } });
+    part ? res.send(part) : res.status(404).send({ message: "Part not found" });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+// Get by SerbiaPN
+exports.getBySerbiaPN = async (req, res) => {
+  try {
+    const part = await Part.findOne({ where: { sarbiaPN: req.query.sarbiaPN } });
     part ? res.send(part) : res.status(404).send({ message: "Part not found" });
   } catch (err) {
     res.status(500).send({ message: err.message });

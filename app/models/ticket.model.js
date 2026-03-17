@@ -1,19 +1,15 @@
 module.exports = (sequelize, Sequelize) => {
   const Ticket = sequelize.define("tickets", {
-    id: {
-      type: Sequelize.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
+
 
     ticketCode: {
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     barcode: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true,
+      unique: false,
     },
   });
 

@@ -2,7 +2,7 @@ module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("users", {
     matricule: {
       type: Sequelize.STRING,
-      unique: true
+      unique: false
     },
     firstName: {
       type: Sequelize.STRING
@@ -17,7 +17,8 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING // 'operateur', 'superviseur', 'admin'
     },
     email: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      allowNull: true
     },
     password: {
       type: Sequelize.STRING
