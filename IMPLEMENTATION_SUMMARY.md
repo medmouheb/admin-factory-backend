@@ -133,13 +133,13 @@ Use `material_import_template.xlsx` as a starting point for imports.
 
 ```bash
 # Export materials
-curl -X GET "http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
+curl -X GET "http://192.168.2.10:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
 
 # Import materials
-curl -X POST http://localhost:8080/api/materials/import -F "file=@material_import_template.xlsx"
+curl -X POST http://192.168.2.10:8080/api/materials/import -F "file=@material_import_template.xlsx"
 
 # Export combined tickets
-curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
+curl -X GET "http://192.168.2.10:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
 ```
 
 ## 📊 Data Flow

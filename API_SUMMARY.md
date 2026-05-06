@@ -87,26 +87,26 @@
 ### Using the Test Page
 
 1. Open `test-excel-apis.html` in your browser
-2. Server must be running on `http://localhost:8080`
+2. Server must be running on `http://192.168.2.10:8080`
 3. Test all 5 APIs with the interactive interface
 
 ### Using cURL
 
 ```bash
 # Export Materials
-curl -X GET "http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
+curl -X GET "http://192.168.2.10:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
 
 # Import Materials
-curl -X POST http://localhost:8080/api/materials/import -F "file=@material_import_template.xlsx"
+curl -X POST http://192.168.2.10:8080/api/materials/import -F "file=@material_import_template.xlsx"
 
 # Export Parts ✨ NEW
-curl -X GET "http://localhost:8080/api/parts/export?startDate=2025-01-01&endDate=2025-12-31" --output parts.xlsx
+curl -X GET "http://192.168.2.10:8080/api/parts/export?startDate=2025-01-01&endDate=2025-12-31" --output parts.xlsx
 
 # Import Parts ✨ NEW
-curl -X POST http://localhost:8080/api/parts/import -F "file=@part_import_template.xlsx"
+curl -X POST http://192.168.2.10:8080/api/parts/import -F "file=@part_import_template.xlsx"
 
 # Export Combined Tickets
-curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
+curl -X GET "http://192.168.2.10:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
 ```
 
 ---

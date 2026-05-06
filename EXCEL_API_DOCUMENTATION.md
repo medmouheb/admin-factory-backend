@@ -18,7 +18,7 @@ This document describes the new Excel export and import APIs that have been adde
 **Example:**
 
 ```
-GET http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31
+GET http://192.168.2.10:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31
 ```
 
 **Response:** Downloads an Excel file named `materials_YYYY-MM-DD_to_YYYY-MM-DD.xlsx`
@@ -56,14 +56,14 @@ GET http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025
 **Example using cURL:**
 
 ```bash
-curl -X POST http://localhost:8080/api/materials/import \
+curl -X POST http://192.168.2.10:8080/api/materials/import \
   -F "file=@materials.xlsx"
 ```
 
 **Example using Postman:**
 
 1. Select POST method
-2. Enter URL: `http://localhost:8080/api/materials/import`
+2. Enter URL: `http://192.168.2.10:8080/api/materials/import`
 3. Go to Body tab
 4. Select form-data
 5. Add key "file" with type "File"
@@ -97,7 +97,7 @@ curl -X POST http://localhost:8080/api/materials/import \
 **Example:**
 
 ```
-GET http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31
+GET http://192.168.2.10:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31
 ```
 
 **Response:** Downloads an Excel file named `tickets_combined_YYYY-MM-DD_to_YYYY-MM-DD.xlsx`
@@ -147,21 +147,21 @@ When preparing an Excel file for import, follow this structure:
 **Export Materials:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" \
+curl -X GET "http://192.168.2.10:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" \
   --output materials.xlsx
 ```
 
 **Import Materials:**
 
 ```bash
-curl -X POST http://localhost:8080/api/materials/import \
+curl -X POST http://192.168.2.10:8080/api/materials/import \
   -F "file=@materials.xlsx"
 ```
 
 **Export Combined Tickets:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" \
+curl -X GET "http://192.168.2.10:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" \
   --output tickets_combined.xlsx
 ```
 
@@ -174,7 +174,7 @@ const startDate = "2025-01-01";
 const endDate = "2025-12-31";
 
 fetch(
-  `http://localhost:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`,
+  `http://192.168.2.10:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`,
 )
   .then((response) => response.blob())
   .then((blob) => {
@@ -193,7 +193,7 @@ const fileInput = document.getElementById("fileInput");
 const formData = new FormData();
 formData.append("file", fileInput.files[0]);
 
-fetch("http://localhost:8080/api/materials/import", {
+fetch("http://192.168.2.10:8080/api/materials/import", {
   method: "POST",
   body: formData,
 })
@@ -208,7 +208,7 @@ const startDate = "2025-01-01";
 const endDate = "2025-12-31";
 
 fetch(
-  `http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`,
+  `http://192.168.2.10:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`,
 )
   .then((response) => response.blob())
   .then((blob) => {

@@ -44,7 +44,7 @@ GET /api/tickets-combined/export?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 ### Option 1: Use the Test HTML Page
 
 1. Open `test-excel-apis.html` in your browser
-2. Make sure your backend server is running on `http://localhost:8080`
+2. Make sure your backend server is running on `http://192.168.2.10:8080`
 3. Use the interactive forms to test each API
 
 ### Option 2: Use cURL
@@ -52,31 +52,31 @@ GET /api/tickets-combined/export?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 **Export Materials:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
+curl -X GET "http://192.168.2.10:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31" --output materials.xlsx
 ```
 
 **Import Materials:**
 
 ```bash
-curl -X POST http://localhost:8080/api/materials/import -F "file=@material_import_template.xlsx"
+curl -X POST http://192.168.2.10:8080/api/materials/import -F "file=@material_import_template.xlsx"
 ```
 
 **Export Combined Tickets:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
+curl -X GET "http://192.168.2.10:8080/api/tickets-combined/export?startDate=2025-01-01&endDate=2025-12-31" --output tickets.xlsx
 ```
 
 ### Option 3: Use Postman
 
 1. **For Export APIs:**
    - Method: GET
-   - URL: `http://localhost:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31`
+   - URL: `http://192.168.2.10:8080/api/materials/export?startDate=2025-01-01&endDate=2025-12-31`
    - Click "Send and Download"
 
 2. **For Import API:**
    - Method: POST
-   - URL: `http://localhost:8080/api/materials/import`
+   - URL: `http://192.168.2.10:8080/api/materials/import`
    - Body: form-data
    - Key: `file` (type: File)
    - Value: Select your Excel file
@@ -182,7 +182,7 @@ Error responses include a descriptive `message` field.
 // Export Materials
 async function exportMaterials(startDate, endDate) {
   const response = await fetch(
-    `http://localhost:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`,
+    `http://192.168.2.10:8080/api/materials/export?startDate=${startDate}&endDate=${endDate}`,
   );
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
@@ -197,7 +197,7 @@ async function importMaterials(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("http://localhost:8080/api/materials/import", {
+  const response = await fetch("http://192.168.2.10:8080/api/materials/import", {
     method: "POST",
     body: formData,
   });
@@ -208,7 +208,7 @@ async function importMaterials(file) {
 // Export Combined Tickets
 async function exportCombinedTickets(startDate, endDate) {
   const response = await fetch(
-    `http://localhost:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`,
+    `http://192.168.2.10:8080/api/tickets-combined/export?startDate=${startDate}&endDate=${endDate}`,
   );
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);

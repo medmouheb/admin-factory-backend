@@ -7,7 +7,7 @@ const app = express();
 var corsOptions = {
   origin: function (origin, callback) {
     console.log("Incoming request origin:", origin);
-    const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(',');
+    const allowedOrigins = (process.env.CORS_ORIGIN || "http://10.160.4.33:5173").split(',').map(o => o.trim());
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -60,6 +60,7 @@ require('./app/routes/history.routes')(app);
 require('./app/routes/ticketCombined.routes')(app);
 require('./app/routes/log.routes')(app);
 require('./app/routes/stats.routes')(app);
+require('./app/routes/productionExport.routes')(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

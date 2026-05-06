@@ -7,6 +7,28 @@ const { logAction } = require("../utils/logger");
 // Create new part
 exports.create = async (req, res) => {
   try {
+    const { learPN, tescaPN, sarbiaPN } = req.body;
+
+    const options = [];
+    if (learPN && learPN.trim() !== "") options.push({ learPN });
+    if (tescaPN && tescaPN.trim() !== "") options.push({ tescaPN });
+
+    if (options.length > 0) {
+      const existingPart = await Part.findOne({
+        where: { [Op.or]: options }
+      });
+
+      if (existingPart) {
+        if (existingPart.learPN === learPN && learPN && learPN.trim() !== "") {
+          return res.status(400).send({ message: "Le P/N Lear existe déjà." });
+        }
+        if (existingPart.tescaPN === tescaPN && tescaPN && tescaPN.trim() !== "") {
+          return res.status(400).send({ message: "Le P/N Tesca existe déjà." });
+        }
+        return res.status(400).send({ message: "Un de ces numéros de pièce existe déjà." });
+      }
+    }
+
     const part = await Part.create(req.body);
     await logAction(req.userId, "Part", "CREATE", null, part);
     res.status(201).send(part);
@@ -39,6 +61,31 @@ exports.findOne = async (req, res) => {
 // Update part
 exports.update = async (req, res) => {
   try {
+    const { learPN, tescaPN, sarbiaPN } = req.body;
+
+    const options = [];
+    if (learPN && learPN.trim() !== "") options.push({ learPN });
+    if (tescaPN && tescaPN.trim() !== "") options.push({ tescaPN });
+
+    if (options.length > 0) {
+      const existingPart = await Part.findOne({
+        where: { 
+          [Op.or]: options,
+          id: { [Op.ne]: req.params.id }
+        }
+      });
+
+      if (existingPart) {
+        if (existingPart.learPN === learPN && learPN && learPN.trim() !== "") {
+          return res.status(400).send({ message: "Le P/N Lear existe déjà." });
+        }
+        if (existingPart.tescaPN === tescaPN && tescaPN && tescaPN.trim() !== "") {
+          return res.status(400).send({ message: "Le P/N Tesca existe déjà." });
+        }
+        return res.status(400).send({ message: "Un de ces numéros de pièce existe déjà." });
+      }
+    }
+
     const previous = await Part.findByPk(req.params.id);
     const [updated] = await Part.update(req.body, { where: { id: req.params.id } });
     if (updated) {
