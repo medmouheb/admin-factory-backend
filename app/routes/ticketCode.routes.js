@@ -13,5 +13,9 @@ module.exports = (app) => {
 
   router.delete("/:id", [authJwt.verifyToken], ticketCodeController.delete);
 
+  router.get("/shift-report", [authJwt.verifyToken], ticketCodeController.shiftReport);
+
+  router.get("/shift-report/excel", [authJwt.verifyToken], ticketCodeController.shiftReportExcel);
+
   app.use("/api/ticketscode", router);
 };

@@ -2,7 +2,7 @@ module.exports = (sequelize, Sequelize) => {
   const TicketCode = sequelize.define("ticket_codes", {
     code: {
       type: Sequelize.STRING(10),
-      unique: true,
+      unique: false,
       allowNull: false,
     },
     matricule: {

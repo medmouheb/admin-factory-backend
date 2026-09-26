@@ -7,8 +7,9 @@ const app = express();
 var corsOptions = {
   origin: function (origin, callback) {
     console.log("Incoming request origin:", origin);
-    const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(',');
-    if (!origin || allowedOrigins.includes(origin)) {
+    const originEnv = process.env.CORS_ORIGIN || "http://192.168.1.11:5173,http://localhost:5173,http://localhost:5174,http://localhost:5175";
+    const allowedOrigins = originEnv.split(',');
+    if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
       callback(null, true);
     } else {
       console.log("Origin not allowed:", origin);
@@ -36,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 const db = require("./app/models");
 const Role = db.role;
 
-db.sequelize.sync({ alter: true });
+db.sequelize.sync({  });
 
 // simple route
 app.get("/", (req, res) => {

@@ -45,7 +45,7 @@ async function createAllTestPackets() {
         console.log('Starting packet creation...\n');
 
         // Sync database
-        await db.sequelize.sync({ force: false });
+        await db.sequelize.sync({  });
 
         // Create all packets from test data
         for (const [key, packetData] of Object.entries(testData)) {

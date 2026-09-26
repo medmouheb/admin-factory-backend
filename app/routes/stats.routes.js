@@ -56,4 +56,10 @@ module.exports = function(app) {
     [authJwt.verifyToken],
     controller.getTicketCodesAnalytics
   );
+
+  app.get(
+    "/api/stats/production-by-shift",
+    [authJwt.verifyToken],
+    controller.getProductionByShift
+  );
 };
