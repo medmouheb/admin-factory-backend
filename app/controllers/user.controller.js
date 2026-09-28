@@ -64,20 +64,94 @@ exports.deleteUser = async (req, res) => {
 
 exports.searchUsers = async (req, res) => {
   try {
-    const { page = 1, size = 10, matricule = "", role = "" } = req.query;
+    const {
+      page = 1,
+      size = 10,
+      matricule = "",
+      role = "",
+      username = "",
+      search = "",
+      hasPhone = "",
+      hasEmail = "",
+      sortBy = "createdAt",
+      sortOrder = "DESC",
+    } = req.query;
+
     const limit = parseInt(size);
     const currentPage = parseInt(page);
     const offset = (currentPage - 1) * limit;
 
     const where = {};
-    if (matricule) where.matricule = { [Op.like]: `%${matricule}%` };
-    if (role) where.role = role;
+
+    // General search across matricule, firstName, lastName, email, phone
+    const q = (search || username || matricule || "").trim();
+    if (q) {
+      where[Op.or] = [
+        { matricule: { [Op.like]: `%${q}%` } },
+        { firstName: { [Op.like]: `%${q}%` } },
+        { lastName: { [Op.like]: `%${q}%` } },
+        { email: { [Op.like]: `%${q}%` } },
+        { phone: { [Op.like]: `%${q}%` } },
+      ];
+    }
+
+    // Role filter
+    if (role && role !== 'all') {
+      const rolesList = role.split(',').map((r) => r.trim()).filter(Boolean);
+      if (rolesList.length === 1) {
+        where.role = rolesList[0];
+      } else if (rolesList.length > 1) {
+        where.role = { [Op.in]: rolesList };
+      }
+    }
+
+    // Phone filter
+    if (hasPhone === 'true' || hasPhone === 'with' || hasPhone === 'hasPhone') {
+      where.phone = {
+        [Op.and]: [
+          { [Op.ne]: null },
+          { [Op.ne]: '' },
+          { [Op.ne]: '-' },
+        ],
+      };
+    } else if (hasPhone === 'false' || hasPhone === 'without' || hasPhone === 'noPhone') {
+      where.phone = {
+        [Op.or]: [
+          { [Op.eq]: null },
+          { [Op.eq]: '' },
+          { [Op.eq]: '-' },
+        ],
+      };
+    }
+
+    // Email filter
+    if (hasEmail === 'true' || hasEmail === 'with' || hasEmail === 'hasEmail') {
+      where.email = {
+        [Op.and]: [
+          { [Op.ne]: null },
+          { [Op.ne]: '' },
+          { [Op.ne]: '-' },
+        ],
+      };
+    } else if (hasEmail === 'false' || hasEmail === 'without' || hasEmail === 'noEmail') {
+      where.email = {
+        [Op.or]: [
+          { [Op.eq]: null },
+          { [Op.eq]: '' },
+          { [Op.eq]: '-' },
+        ],
+      };
+    }
+
+    const validSortFields = ['createdAt', 'matricule', 'firstName', 'lastName', 'role', 'email'];
+    const finalSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const finalSortOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const { rows, count } = await User.findAndCountAll({
       where,
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order: [[finalSortBy, finalSortOrder]],
       distinct: true,
     });
 
